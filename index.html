@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="author" content="懶人阿暝">
+<meta name="description" content="委圖小幫手：整理角色卡、參考圖、委託單與構圖示意圖，並翻譯成日韓英等語言的委圖工具。作者：懶人阿暝">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-title" content="委圖小幫手">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -165,13 +167,15 @@ input[type=range]{width:100%;height:36px;accent-color:var(--p)}
 .zoom b{min-width:56px;text-align:center;font-size:14px}
 .zoom .ib{width:40px;height:40px;font-size:20px;font-weight:800}
 .pairs{border-top:2px dashed var(--line);margin-top:14px;padding-top:12px}
+.foot{text-align:center;font-size:13px;color:var(--mute);padding:28px 0 8px}
+.top .by{font-size:12px;margin-top:2px;opacity:.85}
 @media(max-width:600px){.two{grid-template-columns:minmax(0,1fr)}.top h1{font-size:27px}.mascot{width:52px;height:52px}.tabs button{flex-direction:column;gap:0;font-size:12px;min-height:54px}.tabs svg{width:20px;height:20px}.frs{gap:6px}.fr{font-size:13px;padding:6px 4px}}
 </style></head><body>
 <header class="top">
  <svg class="deco" viewBox="0 0 400 140" preserveAspectRatio="xMaxYMid slice" aria-hidden="true"><g fill="var(--p)" opacity=".22"><circle cx="330" cy="28" r="26"/><circle cx="385" cy="90" r="14"/><circle cx="262" cy="110" r="8"/></g><g fill="var(--p)" opacity=".45"><path d="M296 70l4 9 9 4-9 4-4 9-4-9-9-4 9-4z"/><path d="M372 30l2.5 5.5 5.5 2.5-5.5 2.5-2.5 5.5-2.5-5.5-5.5-2.5 5.5-2.5z"/></g></svg>
  <div class="in">
   <svg class="mascot" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="34" r="24" fill="var(--bg)" stroke="var(--p)" stroke-width="3"/><path d="M14 26c4-12 14-16 22-15 9 1 15 7 16 14-6-5-16-7-24-6-6 1-10 3-14 7z" fill="var(--p)"/><circle cx="24" cy="36" r="2.8" fill="var(--ink)"/><circle cx="40" cy="36" r="2.8" fill="var(--ink)"/><ellipse cx="19" cy="43" rx="4" ry="2.5" fill="var(--p)" opacity=".35"/><ellipse cx="45" cy="43" rx="4" ry="2.5" fill="var(--p)" opacity=".35"/><path d="M28 43q4 4 8 0" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round"/><path d="M50 50l9-15 3 2-9 15-4 1z" fill="var(--p)"/></svg>
-  <div><h1>委圖小幫手</h1><p>角色卡・委託單・多語翻譯・示意圖</p></div>
+  <div><h1>委圖小幫手</h1><p>角色卡・委託單・多語翻譯・示意圖</p><p class="by">作者：懶人阿暝</p></div>
   <button class="themeBtn" id="themeBtn" aria-label="換主題色"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 2-2 0-1.5-1.3-1.6-1.3-3 0-1 .8-1.7 1.8-1.7H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10" cy="7" r="1.2" fill="currentColor"/><circle cx="15" cy="7" r="1.2" fill="currentColor"/></svg></button>
  </div>
  <svg class="wave" viewBox="0 0 400 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0 10q25 12 50 0t50 0 50 0 50 0 50 0 50 0 50 0 50 0V22H0z" fill="var(--bg)"/></svg>
@@ -205,12 +209,23 @@ input[type=range]{width:100%;height:36px;accent-color:var(--p)}
   <div class="mcs" id="langList"></div>
   <div class="row" style="margin-bottom:10px"><input id="langName" placeholder="新增語言名稱" style="flex:1" aria-label="新增語言名稱"><button class="btn" id="langAdd">新增</button></div>
   <button class="btn" id="trAll" style="width:100%;margin-bottom:26px">一次翻譯全部角色卡和委託單</button>
+  <h3 class="sec">AI 自動翻譯（選用）</h3>
+  <div class="note" style="border:2px solid var(--p)"><b>⚠ 請只使用「免費、沒有綁信用卡」的 API 金鑰。</b><br>這樣就算金鑰外流，最多只是當天額度被用完，不會被扣錢。不填也沒關係，一樣可以用上面的「翻譯檔」貼給任何 AI 翻。</div>
+  <p class="mute" style="margin-top:0">目前支援 Google Gemini：到 Google AI Studio（aistudio.google.com）登入後按「Get API key」建立金鑰，不要設定帳單。金鑰只存在這支手機的瀏覽器裡，不會放進備份檔，也不會傳給 Google 以外的地方。免費方案的內容可能會被 Google 用來改進產品，不想公開的設定請改用翻譯檔。在 Claude 裡打開時會直接用 Claude 翻譯，這個設定是給自己架的網站（例如 GitHub Pages）用的。</p>
+  <label class="fl"><span>Gemini API 金鑰</span><input id="gKey" type="password" autocomplete="off" placeholder="AIza…" spellcheck="false"></label>
+  <label class="fl"><span>模型</span><input id="gModel" list="gModels" spellcheck="false"><datalist id="gModels"><option value="gemini-flash-lite-latest"><option value="gemini-flash-latest"></datalist></label>
+  <p class="mute" style="margin-top:-6px">建議用 Flash-Lite：免費額度最多，翻譯也夠用。</p>
+  <div class="acts" style="margin:0 0 6px"><button class="btn" id="gTest">測試連線</button><button class="btn danger" id="gClear">清除金鑰</button></div>
+  <p class="mute" id="gStat" aria-live="polite" style="margin-bottom:26px"></p>
   <h3 class="sec">備份與資料</h3>
   <p>角色卡、照片和示意圖都只存在<b>這支手機的這個瀏覽器／App</b>裡，不會上傳到任何地方。換手機、清除瀏覽器資料、或改用別的瀏覽器開啟時就看不到，建議每次改完都下載一份備份檔。</p>
   <div class="note" id="stInfo">讀取中…</div>
   <div class="acts"><button class="btn pri" id="bkExp">下載備份檔（.json）</button><button class="btn" id="bkImp">匯入備份檔</button></div>
   <p class="mute" id="bkStat" aria-live="polite"></p>
+  <h3 class="sec" style="margin-top:26px">關於</h3>
+  <p class="mute" style="margin-top:0">委圖小幫手由 <b>懶人阿暝</b> 製作，以 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hant" style="color:var(--p)">CC BY-NC-SA 4.0</a> 授權釋出。個人免費使用、非營利分享都歡迎，<b>禁止任何商業／營利用途</b>。用這個工具整理的角色資料和委託內容屬於你自己。</p>
 </section>
+<footer class="foot">委圖小幫手 ・ 作者：懶人阿暝 ・ © 2026 ・ CC BY-NC-SA 4.0</footer>
 </main>
 <nav class="tabs">
  <button data-tab="cards" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="4"/><path d="M12 15.5s-3.5-2-3.5-4.3A1.9 1.9 0 0 1 12 10a1.9 1.9 0 0 1 3.5 1.2c0 2.3-3.5 4.3-3.5 4.3z" fill="currentColor"/></svg><span>角色卡</span></button>
@@ -260,7 +275,7 @@ function ask(msg,okText,fn){openModal(`<h3>${esc(msg)}</h3><div class="acts"><bu
 function prompt2(title,val,fn){openModal(`<h3>${esc(title)}</h3><input id="pIn" value="${esc(val)}"><div class="acts"><button class="btn" data-close>取消</button><button class="btn pri" id="pOk">確定</button></div>`);const i=$('#pIn');i.focus();i.select();const go=()=>{const v=i.value.trim();closeModal();if(v)fn(v)};$('#pOk').onclick=go;i.onkeydown=e=>{if(e.key==='Enter')go()}}
 
 /* ---------- views ---------- */
-function show(v){document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));const t=v==='edit'?'cards':v==='oedit'?'orders':v;document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));window.scrollTo(0,0);if(v==='sketch')enterSketch();if(v==='backup'){storageInfo();renderLangs()}if(v==='cards')renderCards();if(v==='orders')renderOrders()}
+function show(v){document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));const t=v==='edit'?'cards':v==='oedit'?'orders':v;document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));window.scrollTo(0,0);if(v==='sketch')enterSketch();if(v==='backup'){storageInfo();renderLangs();renderGem()}if(v==='cards')renderCards();if(v==='orders')renderOrders()}
 document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)show(b.dataset.tab)});
 
 /* ---------- card list ---------- */
@@ -322,7 +337,7 @@ $('#photoIn').addEventListener('change',async e=>{const fs=[...e.target.files].s
 
 /* ---------- AI translate ---------- */
 const TR_NAMES={ja:'Japanese',ko:'Korean',en:'English'};
-async function aiTranslate(kind,src,langs,onText){const sample=await use('sample');if(!sample)throw{code:'unavailable'};
+async function aiTranslate(kind,src,langs,onText){const sample=aiOK?await use('sample'):null,g=gem();if(!sample&&!g.key)throw{code:'unavailable'};
  const keys=Object.keys(src),shape=keys.map(k=>`"${k}":${Array.isArray(src[k])?'[]':'""'}`).join(',');
  const prompt=`You help a Taiwanese fan commission art from an illustrator. Translate this ${kind} from Traditional Chinese into: ${langs.map(l=>TR_NAMES[l]||LANGS[l]).join(', ')}.
 Rules:
@@ -334,8 +349,8 @@ Rules:
 Return ONLY a JSON object with no markdown, shaped as {${langs.map(l=>`"${l}":{${shape}}`).join(',')}}.
 Source:
 ${JSON.stringify(src)}`;
- const r=await sample(prompt,{modelTier:'default',onText});const m=(r.text||'').match(/\{[\s\S]*\}/);if(!m)throw new Error('empty');return JSON.parse(m[0])}
-const trErr=err=>err&&err.code==='unavailable'?'這個開啟方式無法使用 AI 翻譯，請在 Claude 裡開啟這個頁面再試。':err&&err.code==='not_granted'?'沒有取得 AI 使用權限，請允許後再試一次。':err&&err.code==='rate_limited'?'使用太頻繁了，請稍等一下再試。':'翻譯失敗了，請再試一次。';
+ const text=sample?(await sample(prompt,{modelTier:'default',onText})).text:await gemini(prompt,onText);const m=(text||'').match(/\{[\s\S]*\}/);if(!m)throw new Error('empty');return JSON.parse(m[0])}
+const trErr=err=>err&&err.code==='unavailable'?'還沒有設定 AI，請到「設定」填入免費的 Gemini API 金鑰，或改用翻譯檔。':err&&err.code==='quota'?'今天的免費額度用完了，請明天再試，或改用翻譯檔。':err&&err.code==='badkey'?'API 金鑰或模型名稱有誤，請到「設定」檢查。':err&&err.code==='network'?'連不上 Gemini，請確認網路後再試。':err&&err.code==='not_granted'?'沒有取得 AI 使用權限，請允許後再試一次。':err&&err.code==='rate_limited'?'使用太頻繁了，請稍等一下再試。':'翻譯失敗了，請再試一次。';
 async function translateCard(c,langs,onText){const src={};KEYS.forEach(k=>src[k]=c.f[k]||'');src.pal=c.pal.map(p=>p.label||'');
  const obj=await aiTranslate('character sheet',src,langs,onText);let n=0;
  langs.forEach(l=>{const o=obj[l];if(!o)return;const t={};KEYS.forEach(k=>t[k]=typeof o[k]==='string'?o[k]:'');t.pal=Array.isArray(o.pal)?o.pal.map(x=>String(x??'')):[];c.tr[l]=t;n++});
@@ -755,6 +770,19 @@ function applyLangs(){Object.keys(LANGS).forEach(k=>{if(k!=='zh')delete LANGS[k]
 function saveLangs(){put('meta',{id:'langs',list:langList})}
 const otherLangs=()=>Object.keys(LANGS).filter(k=>k!=='zh');
 let aiOK=false;use('sample').then(s=>{aiOK=!!s});
+function gem(){try{const v=JSON.parse(localStorage.getItem('commish-gemini')||'{}');return{key:String(v.key||''),model:String(v.model||'gemini-flash-lite-latest')}}catch(e){return{key:'',model:'gemini-flash-lite-latest'}}}
+function setGem(v){try{localStorage.setItem('commish-gemini',JSON.stringify(v))}catch(e){}}
+async function gemini(prompt,onText){const g=gem();if(onText)onText({text:''});let r;
+ try{r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(g.model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':g.key},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json',temperature:.3}})})}catch(e){throw{code:'network'}}
+ if(r.status===429)throw{code:'quota'};if(r.status===400||r.status===401||r.status===403||r.status===404)throw{code:'badkey'};if(!r.ok)throw{code:'http'};
+ const d=await r.json();const t=(((d.candidates||[])[0]||{}).content||{}).parts;const text=(t||[]).map(p=>p.text||'').join('');if(onText)onText({text});return text}
+const aiName=()=>aiOK?'Claude':gem().key?'Gemini':'';
+function renderGem(){const g=gem();$('#gKey').value=g.key;$('#gModel').value=g.model;$('#gStat').textContent=g.key?'已設定金鑰，翻譯時會出現「用 Gemini 自動翻譯」。':''}
+$('#gKey').addEventListener('change',e=>{const g=gem();g.key=e.target.value.trim();setGem(g);renderGem()});
+$('#gModel').addEventListener('change',e=>{const g=gem();g.model=e.target.value.trim()||'gemini-flash-lite-latest';setGem(g);renderGem()});
+$('#gClear').onclick=()=>{setGem({key:'',model:gem().model});renderGem();$('#gStat').textContent='已清除金鑰。'};
+$('#gTest').onclick=async()=>{const st=$('#gStat'),g=gem();if(!g.key){st.textContent='請先貼上金鑰。';return}st.textContent='測試中…';
+ try{const t=await gemini('Reply with exactly this JSON: {"ok":true}');st.textContent=/ok/.test(t)?`連線成功（${g.model}）。可以開始用 Gemini 翻譯了。`:'有回應，但內容怪怪的，請換個模型名稱試試。'}catch(e){st.textContent=trErr(e)}};
 
 /* translation file: export, paste into any AI, import back */
 function trFileText(lg,cs,os){const name=LANGS[lg],L=[
@@ -788,7 +816,7 @@ function applyTr(res,lg){let nc=0,no=0;
  Object.entries(res.orders).forEach(([id,f])=>{const o=orders.find(x=>x.id===id);if(!o)return;const t=o.tr[lg]||(o.tr[lg]={});OKEYS.forEach(k=>{if(typeof f[k]==='string')t[k]=f[k]});o.updated=Date.now();put('orders',o);no++});
  const def=langList.find(l=>l.code===lg);if(def&&isCustom(lg)&&Object.keys(res.labels).length){def.labels={...(def.labels||{}),...res.labels};saveLangs();applyLangs()}
  return{nc,no}}
-function trHub(cs,os,after){const ai=aiOK?`<button class="btn" id="hubAI" style="width:100%;margin-bottom:14px">用 Claude 自動翻譯</button>`:'';let lg=otherLangs()[0];
+function trHub(cs,os,after){const an=aiName(),ai=an?`<button class="btn" id="hubAI" style="width:100%;margin-bottom:14px">用 ${an} 自動翻譯</button>`:'';let lg=otherLangs()[0];
  const draw=()=>{openModal(`<h3>翻譯</h3>${ai}
  <h3 class="sec">① 匯出翻譯檔</h3><p class="mute" style="margin-top:0">選要翻成的語言，複製或下載後貼給 ChatGPT、Gemini 等任何 AI，請它照格式翻譯。</p>
  <div class="chips">${otherLangs().map(l=>`<button data-tl="${l}" class="${l===lg?'on':''}">${esc(LANGS[l])}</button>`).join('')}</div>
@@ -797,7 +825,7 @@ function trHub(cs,os,after){const ai=aiOK?`<button class="btn" id="hubAI" style=
  <button class="btn" id="hubIm" style="width:100%">貼上或選擇檔案</button>
  <p class="mute">想翻成其他語言？到「設定」新增語言。</p>`);
  sheet.querySelectorAll('[data-tl]').forEach(b=>b.onclick=()=>{lg=b.dataset.tl;draw()});
- if(aiOK)$('#hubAI').onclick=()=>{closeModal();os.length?oTrSheet():trSheet()};
+ if(an)$('#hubAI').onclick=()=>{closeModal();os.length?oTrSheet():trSheet()};
  $('#hubEx').onclick=()=>{const t=trFileText(lg,cs,os);showOut({blob:new Blob([t],{type:'text/plain;charset=utf-8'}),filename:`翻譯檔_${fname(os[0]?os[0].f.title:cs[0]?cs[0].f.name:'all')}_${lg}.txt`,text:t,note:'按「複製文字」貼給任何 AI，請它翻譯。翻好後回到「翻譯 → ② 匯入」貼回來。'})};
  $('#hubIm').onclick=()=>importSheet(lg,after)};draw()}
 function importSheet(lg,after){openModal(`<h3>匯入翻譯</h3><p class="mute">把 AI 翻好的整段內容貼在下面（要包含 [[...]] 標記），或選擇 AI 給你的文字檔。</p>
