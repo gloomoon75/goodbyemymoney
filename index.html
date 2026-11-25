@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="委圖小幫手">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#ffe3ec">
+<title>委圖小幫手</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Huninn&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+<script>try{document.documentElement.dataset.color=localStorage.getItem('commish-color')||'berry'}catch(e){document.documentElement.dataset.color='berry'}</script>
+<style>
+/* VOICE: soft, cheerful sticker-book for fans commissioning art
+   IDEA: a pastel binder of sticker character cards plus a doll sketchbook
+   PICTURE: the card binder grid; the live sketch canvas with posable dolls
+   COLOUR and TYPE: one of five pastel themes (berry, mint, lavender, milk tea, sky); Huninn rounded titles
+   LAYOUT: phone-first single column, floating pill tab bar, sheets slide up */
+:root{color-scheme:light dark;--bg:light-dark(var(--bgL),var(--bgD));--ink:light-dark(var(--inkL),var(--inkD));--soft:light-dark(var(--softL),var(--softD));--line:light-dark(var(--lineL),var(--lineD));--p:light-dark(var(--pL),var(--pD));--pInk:light-dark(var(--piL),var(--piD));--mute:color-mix(in srgb,var(--ink) 64%,var(--bg));--danger:light-dark(#d23c4f,#ff8a96);--r:20px;--rf:"Huninn","M PLUS Rounded 1c",system-ui,sans-serif}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+:root,:root[data-color=berry]{--bgL:#fff7f9;--softL:#ffe3ec;--lineL:#f6d0dd;--inkL:#4f2335;--pL:#e94f84;--piL:#fff;--bgD:#22151b;--softD:#38222d;--lineD:#4d2f3c;--inkD:#ffeaf1;--pD:#ff8fb3;--piD:#3a1424}
+:root[data-color=mint]{--bgL:#f3fcf9;--softL:#d6f4ea;--lineL:#bfe8da;--inkL:#1b453d;--pL:#3cc9a3;--piL:#0f3a31;--bgD:#10201c;--softD:#1a342c;--lineD:#29473d;--inkD:#e1faf2;--pD:#5fd9b6;--piD:#0c2c25}
+:root[data-color=lavender]{--bgL:#f8f5ff;--softL:#e9e1ff;--lineL:#d9cdfb;--inkL:#36295e;--pL:#8a69ee;--piL:#fff;--bgD:#1a1626;--softD:#2a2340;--lineD:#3b3258;--inkD:#efe9ff;--pD:#b49cff;--piD:#21173f}
+:root[data-color=milktea]{--bgL:#fcf7f1;--softL:#f2e4d4;--lineL:#e6d2bd;--inkL:#4a3324;--pL:#a87249;--piL:#fff;--bgD:#1e1813;--softD:#32271f;--lineD:#46382c;--inkD:#f8ece0;--pD:#d9a77c;--piD:#2b1c10}
+:root[data-color=sky]{--bgL:#f4faff;--softL:#d9eefc;--lineL:#c2e0f6;--inkL:#183b57;--pL:#5ab4ee;--piL:#0d2f4b;--bgD:#111b24;--softD:#1a2c3b;--lineD:#284156;--inkD:#e4f3ff;--pD:#7cc6f5;--piD:#0b2338}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "M PLUS Rounded 1c",system-ui,-apple-system,"PingFang TC",sans-serif;overflow-x:clip;padding-bottom:104px;transition:background .3s}
+h1,h2,h3{font-family:var(--rf);line-height:1.15;margin:0;text-wrap:balance;font-weight:400}
+.top{position:relative;background:var(--soft);padding:20px max(5vw,18px) 34px;overflow:hidden}
+.top .in{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+.top h1{font-size:32px}
+.top p{margin:2px 0 0;font-size:14px;color:var(--mute)}
+.mascot{width:64px;height:64px;flex:none}
+.deco{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.wave{position:absolute;left:0;bottom:-1px;width:100%;height:22px;display:block}
+.themeBtn{margin-left:auto;flex:none;width:48px;height:48px;border-radius:50%;border:2px solid var(--line);background:var(--bg);color:var(--p);display:grid;place-items:center;cursor:pointer;box-shadow:0 4px 0 var(--line)}
+.themeBtn svg{width:24px;height:24px}
+.warn{background:var(--p);color:var(--pInk);font-size:14px;padding:10px max(5vw,16px);text-align:center}
+main{max-width:900px;margin:0 auto;padding:8px max(4vw,14px) 16px}
+.view{display:none}.view.on{display:block;animation:pop .25s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 16px;flex-wrap:wrap}
+.bar h2{font-size:26px}
+.btn{font:inherit;font-size:15px;font-weight:800;min-height:46px;padding:0 18px;border-radius:999px;border:2px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;box-shadow:0 3px 0 var(--line);transition:transform .1s}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.btn.pri{background:var(--p);color:var(--pInk);border-color:var(--p);box-shadow:0 3px 0 color-mix(in srgb,var(--p) 60%,var(--ink))}
+.btn.ghost{border-color:transparent;box-shadow:none;padding:0 6px}
+.btn.danger{color:var(--danger)}
+.btn.sm{min-height:42px;padding:0 14px;font-size:14px}
+.btn:disabled{opacity:.5}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.cc:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.cc{all:unset;cursor:pointer;display:flex;flex-direction:column;border-radius:var(--r);background:var(--bg);overflow:hidden;border:2px solid var(--line);box-shadow:0 6px 0 var(--line);transition:transform .15s}
+.cc:hover{transform:translateY(-2px) rotate(-.6deg)}
+.cc .cv{aspect-ratio:3/4;display:grid;place-items:center;overflow:hidden;margin:8px 8px 0;border-radius:14px}
+.cc .cv img{width:100%;height:100%;object-fit:cover}
+.cc .cv b{font:400 56px var(--rf);color:#fff;text-shadow:0 2px 12px rgb(0 0 0/.2)}
+.strip{display:flex;gap:4px;padding:8px 10px 0}.strip i{flex:1;height:10px;border-radius:99px}
+.nm{font-weight:800;padding:6px 12px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta{font-size:13px;color:var(--mute);padding:0 12px 12px}
+.empty{grid-column:1/-1;padding:40px 20px;text-align:center;color:var(--mute);border:2.5px dashed var(--line);border-radius:var(--r)}
+.mute{color:var(--mute);font-size:14px}
+.seg{display:flex;gap:4px;background:var(--soft);padding:5px;border-radius:999px;margin-bottom:16px;overflow-x:auto}
+.seg button{flex:1 0 auto;font:inherit;font-size:15px;font-weight:800;min-height:42px;border:0;border-radius:999px;background:none;color:var(--ink);padding:0 14px;cursor:pointer}
+.seg button.on{background:var(--p);color:var(--pInk)}
+.note{background:var(--soft);border-radius:16px;padding:12px 16px;font-size:14px;margin-bottom:16px}
+.fl{display:block;margin:0 0 16px}
+.fl>span{display:block;font-size:14px;font-weight:800;margin:0 0 6px 4px}
+input:not([type=checkbox]):not([type=color]):not([type=range]),textarea,select{width:100%;font:inherit;font-size:16px;padding:10px 14px;border-radius:16px;border:2px solid var(--line);background:var(--bg);color:var(--ink);min-height:46px}
+textarea{resize:vertical;min-height:80px;line-height:1.55;display:block}
+.fl.big input{font-size:22px;font-weight:800}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+h3.sec{font-size:17px;margin:6px 0 10px 4px}
+.phs{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;margin-bottom:16px}
+.pt{flex:0 0 116px;aspect-ratio:3/4;position:relative;border-radius:16px;overflow:hidden;scroll-snap-align:start;background:var(--soft);border:2px solid var(--line)}
+.pt img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
+.pt .x{position:absolute;top:6px;right:6px;width:36px;height:36px;border-radius:50%;border:0;background:rgb(0 0 0/.5);color:#fff;font-size:18px;cursor:pointer}
+.padd{flex:0 0 116px;aspect-ratio:3/4;border:2.5px dashed var(--line);border-radius:16px;background:var(--soft);color:var(--p);font:inherit;font-size:30px;cursor:pointer;scroll-snap-align:start}
+.padd small{display:block;font-size:13px;font-weight:800}
+.sw{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+input[type=color]{width:52px;height:46px;border:2px solid var(--line);padding:3px;background:var(--bg);border-radius:14px;flex:none;cursor:pointer}
+.sw .x{flex:none;width:46px;height:46px;border-radius:50%;border:2px solid var(--line);background:none;color:var(--mute);font-size:18px;cursor:pointer}
+.actbar{position:sticky;bottom:88px;display:flex;gap:8px;background:var(--bg);padding:10px 0;flex-wrap:wrap;z-index:5}
+.actbar .btn{flex:1}
+.saved{font-size:13px;color:var(--mute);transition:opacity .3s}
+.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:max(12px,env(safe-area-inset-bottom));width:min(480px,calc(100% - 20px));display:flex;gap:4px;background:var(--bg);border:2px solid var(--line);padding:6px;border-radius:999px;z-index:20;box-shadow:0 8px 24px rgb(0 0 0/.12)}
+.tabs button{flex:1;font:inherit;font-size:13px;font-weight:800;min-height:50px;border:0;border-radius:999px;background:none;color:var(--mute);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.tabs svg{width:22px;height:22px}
+.tabs button.on{background:var(--p);color:var(--pInk)}
+.modal{position:fixed;inset:0;background:rgb(0 0 0/.4);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+.modal[hidden]{display:none}
+.sheet{background:var(--bg);width:min(560px,100%);max-height:92vh;overflow:auto;border-radius:28px 28px 0 0;padding:22px 18px max(22px,env(safe-area-inset-bottom));animation:up .25s cubic-bezier(.3,1.4,.6,1)}
+.sheet h3{font-size:22px;margin-bottom:8px}
+@keyframes up{from{transform:translateY(60px);opacity:0}}
+@media(min-width:700px){.modal{align-items:center}.sheet{border-radius:28px}}
+@media(prefers-reduced-motion:reduce){.sheet,.view.on{animation:none}.cc,.btn{transition:none}}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.acts .btn{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.chips button,.chk{font:inherit;font-size:15px;font-weight:800;min-height:44px;padding:0 16px;border-radius:999px;border:2px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chips button.on{background:var(--p);color:var(--pInk);border-color:var(--p)}
+.chips small{font-weight:500;opacity:.75}
+.chk input{width:18px;height:18px;accent-color:var(--p)}
+.prev{display:block;max-width:100%;max-height:58vh;margin:8px auto;border-radius:14px;border:2px solid var(--line)}
+pre.prev{white-space:pre-wrap;overflow:auto;padding:14px;font:14px/1.6 system-ui,sans-serif;background:var(--soft);width:100%}
+.themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.th{all:unset;cursor:pointer;border-radius:20px;border:2.5px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:8px}
+.th.on{border-color:var(--p);box-shadow:0 0 0 3px var(--soft)}
+.th .pv{display:flex;height:44px;border-radius:14px;overflow:hidden}.th .pv i{flex:1}
+.th b{font-weight:800}
+.skHead{display:flex;gap:6px;align-items:center;margin-bottom:12px}
+.skHead select{flex:1}
+.cw{margin:0 auto;border-radius:18px;overflow:hidden;border:2.5px solid var(--line);background:#fff;box-shadow:0 6px 0 var(--line)}
+.cw canvas{display:block;width:100%;height:auto;touch-action:none}
+.szTag{text-align:center;margin:10px 0 0}
+.tools{display:flex;gap:6px;margin:14px 0 10px;overflow-x:auto;padding-bottom:4px}
+.tools button{flex:1 0 auto;font:inherit;font-size:15px;font-weight:800;min-height:46px;padding:0 14px;border-radius:999px;border:2px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.tools button.on{background:var(--p);color:var(--pInk);border-color:var(--p)}
+.panel{background:var(--soft);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.dots{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dot{width:40px;height:40px;border-radius:50%;border:3px solid var(--bg);box-shadow:0 0 0 2px var(--line);cursor:pointer}
+.dot.on{box-shadow:0 0 0 3px var(--p)}
+input[type=range]{width:100%;height:36px;accent-color:var(--p)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row label{display:inline-flex;gap:6px;align-items:center;font-size:15px;font-weight:800;min-height:46px;padding:0 4px}
+.row label input{width:20px;height:20px;accent-color:var(--p)}
+.lyr{border:2px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.lyr .hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.lyr ul{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px;max-height:320px;overflow:auto}
+.lyr li{display:flex;align-items:center;gap:6px;border-radius:16px;padding:4px;background:var(--bg);border:2px solid transparent;cursor:pointer}
+.lyr li.on{border-color:var(--p);background:var(--soft)}
+.lyr li.off .ln{opacity:.45;text-decoration:line-through}
+.lyr .ic{flex:none;width:34px;height:34px;border-radius:12px;display:grid;place-items:center;color:#fff}
+.lyr .ic svg{width:20px;height:20px}
+.lyr .ln{flex:1;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ib{flex:none;width:42px;height:42px;border-radius:50%;border:0;background:none;color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.ib:disabled{opacity:.25;cursor:default}
+.ib svg{width:22px;height:22px}
+.big img{max-width:100%;max-height:70vh;display:block;margin:0 auto;border-radius:14px}
+.frs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:18px}
+.fr{all:unset;box-sizing:border-box;cursor:pointer;border:2px solid var(--line);border-radius:18px;padding:7px 6px 8px;text-align:center;font-weight:800;font-size:14px;background:var(--bg)}
+.fr svg{display:block;width:100%;aspect-ratio:1;border-radius:12px;background:var(--soft);margin-bottom:6px}
+.fr.on{border-color:var(--p);box-shadow:0 0 0 3px var(--soft);background:var(--soft)}
+.fr.on svg{background:var(--bg)}
+.fr:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+.oc{all:unset;box-sizing:border-box;width:100%;display:flex;gap:14px;align-items:center;padding:14px 16px;border:2px solid var(--line);border-radius:var(--r);box-shadow:0 5px 0 var(--line);cursor:pointer;margin-bottom:14px;background:var(--bg)}
+.oc:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+.oc .tx{flex:1;min-width:0}.oc b{display:block;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.av{display:flex;flex:none}.av span{width:44px;height:44px;border-radius:50%;border:3px solid var(--bg);margin-left:-12px;overflow:hidden;display:grid;place-items:center;color:#fff;font-weight:800;background:var(--p)}
+.av span:first-child{margin-left:0}.av img{width:100%;height:100%;object-fit:cover}
+.pill{display:inline-block;font-size:12px;font-weight:800;padding:2px 10px;border-radius:99px;background:var(--soft);color:var(--ink);white-space:nowrap}
+.pill.hot{background:var(--p);color:var(--pInk)}
+.mcs{display:grid;gap:8px;margin-bottom:10px}
+.mc{display:flex;align-items:center;gap:10px;border:2px solid var(--line);border-radius:18px;padding:6px 6px 6px 8px}
+.mc .av span{width:40px;height:40px}
+.mc .tx{flex:1;min-width:0;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mc .tx small{font-weight:500;color:var(--mute);margin-left:6px}
+.camrow{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.camrow .chips{margin:0}
+.zoom{display:inline-flex;align-items:center;gap:2px;border:2px solid var(--line);border-radius:999px;padding:2px}
+.zoom b{min-width:56px;text-align:center;font-size:14px}
+.zoom .ib{width:40px;height:40px;font-size:20px;font-weight:800}
+.pairs{border-top:2px dashed var(--line);margin-top:14px;padding-top:12px}
+@media(max-width:600px){.two{grid-template-columns:minmax(0,1fr)}.top h1{font-size:27px}.mascot{width:52px;height:52px}.tabs button{flex-direction:column;gap:0;font-size:12px;min-height:54px}.tabs svg{width:20px;height:20px}.frs{gap:6px}.fr{font-size:13px;padding:6px 4px}}
+</style></head><body>
+<header class="top">
+ <svg class="deco" viewBox="0 0 400 140" preserveAspectRatio="xMaxYMid slice" aria-hidden="true"><g fill="var(--p)" opacity=".22"><circle cx="330" cy="28" r="26"/><circle cx="385" cy="90" r="14"/><circle cx="262" cy="110" r="8"/></g><g fill="var(--p)" opacity=".45"><path d="M296 70l4 9 9 4-9 4-4 9-4-9-9-4 9-4z"/><path d="M372 30l2.5 5.5 5.5 2.5-5.5 2.5-2.5 5.5-2.5-5.5-5.5-2.5 5.5-2.5z"/></g></svg>
+ <div class="in">
+  <svg class="mascot" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="34" r="24" fill="var(--bg)" stroke="var(--p)" stroke-width="3"/><path d="M14 26c4-12 14-16 22-15 9 1 15 7 16 14-6-5-16-7-24-6-6 1-10 3-14 7z" fill="var(--p)"/><circle cx="24" cy="36" r="2.8" fill="var(--ink)"/><circle cx="40" cy="36" r="2.8" fill="var(--ink)"/><ellipse cx="19" cy="43" rx="4" ry="2.5" fill="var(--p)" opacity=".35"/><ellipse cx="45" cy="43" rx="4" ry="2.5" fill="var(--p)" opacity=".35"/><path d="M28 43q4 4 8 0" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round"/><path d="M50 50l9-15 3 2-9 15-4 1z" fill="var(--p)"/></svg>
+  <div><h1>委圖小幫手</h1><p>角色卡・委託單・多語翻譯・示意圖</p></div>
+  <button class="themeBtn" id="themeBtn" aria-label="換主題色"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 2-2 0-1.5-1.3-1.6-1.3-3 0-1 .8-1.7 1.8-1.7H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10" cy="7" r="1.2" fill="currentColor"/><circle cx="15" cy="7" r="1.2" fill="currentColor"/></svg></button>
+ </div>
+ <svg class="wave" viewBox="0 0 400 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0 10q25 12 50 0t50 0 50 0 50 0 50 0 50 0 50 0 50 0V22H0z" fill="var(--bg)"/></svg>
+</header>
+<div class="warn" id="warn" hidden></div>
+<main>
+<section id="v-cards" class="view on">
+  <div class="bar"><h2>我的角色</h2><button class="btn pri" id="newCard">＋ 新角色</button></div>
+  <div id="cardGrid" class="grid"></div>
+</section>
+<section id="v-edit" class="view"></section>
+<section id="v-orders" class="view">
+  <div class="bar"><h2>我的委託</h2><button class="btn pri" id="newOrder">＋ 委新圖</button></div>
+  <div id="orderList"></div>
+</section>
+<section id="v-oedit" class="view"></section>
+<section id="v-sketch" class="view">
+  <div class="skHead"><select id="skSel" aria-label="選擇示意圖"></select><button class="btn sm" id="skNew">新增</button><button class="btn sm" id="skRen">改名</button><button class="btn sm danger" id="skDel">刪除</button></div>
+  <div class="cw" id="cw"><canvas id="cv" width="900" height="1200" aria-label="示意圖畫布"></canvas></div>
+  <div class="camrow"><div class="chips" id="frameChips" role="group" aria-label="取景"></div><span class="zoom"><button class="ib" id="zOut" aria-label="縮小">−</button><b id="zVal">100%</b><button class="ib" id="zIn" aria-label="放大">＋</button></span></div>
+  <p class="szTag mute"><span id="szTxt"></span> ・ <button class="btn sm ghost" id="skSize">更改尺寸</button></p>
+  <div class="tools" role="toolbar"><button data-tool="pose" class="on">姿勢／移動</button><button data-tool="pan">移動畫面</button><button data-tool="pen">畫筆</button><button data-tool="erase">橡皮擦</button><button id="undo">復原</button></div>
+  <div class="panel" id="panel"></div>
+  <div class="lyr" id="lyr"></div>
+  <div class="row"><label><input type="checkbox" id="optLines" checked>身高刻度</label><label><input type="checkbox" id="optGrid">格線</label><button class="btn pri" id="skExport" style="margin-left:auto">匯出 PNG</button></div>
+</section>
+<section id="v-backup" class="view">
+  <div class="bar"><h2>設定</h2></div>
+  <h3 class="sec">翻譯語言</h3>
+  <p class="mute" style="margin-top:0">中文是原文。這裡的語言會出現在角色卡和委託單的語言分頁，也可以新增其他語言，例如 简体中文、Español、ไทย。</p>
+  <div class="mcs" id="langList"></div>
+  <div class="row" style="margin-bottom:10px"><input id="langName" placeholder="新增語言名稱" style="flex:1" aria-label="新增語言名稱"><button class="btn" id="langAdd">新增</button></div>
+  <button class="btn" id="trAll" style="width:100%;margin-bottom:26px">一次翻譯全部角色卡和委託單</button>
+  <h3 class="sec">備份與資料</h3>
+  <p>角色卡、照片和示意圖都只存在<b>這支手機的這個瀏覽器／App</b>裡，不會上傳到任何地方。換手機、清除瀏覽器資料、或改用別的瀏覽器開啟時就看不到，建議每次改完都下載一份備份檔。</p>
+  <div class="note" id="stInfo">讀取中…</div>
+  <div class="acts"><button class="btn pri" id="bkExp">下載備份檔（.json）</button><button class="btn" id="bkImp">匯入備份檔</button></div>
+  <p class="mute" id="bkStat" aria-live="polite"></p>
+</section>
+</main>
+<nav class="tabs">
+ <button data-tab="cards" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="4"/><path d="M12 15.5s-3.5-2-3.5-4.3A1.9 1.9 0 0 1 12 10a1.9 1.9 0 0 1 3.5 1.2c0 2.3-3.5 4.3-3.5 4.3z" fill="currentColor"/></svg><span>角色卡</span></button>
+ <button data-tab="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="3"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/></svg><span>委託單</span></button>
+ <button data-tab="sketch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/></svg><span>示意圖</span></button>
+ <button data-tab="backup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18z"/><path d="M12 15v-5m-2.5 2.5L12 10l2.5 2.5"/></svg><span>設定</span></button>
+</nav>
+<div id="modal" class="modal" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<input type="file" id="photoIn" accept="image/*" multiple hidden>
+<input type="file" id="importIn" accept="application/json,.json" hidden>
+<script>
+{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const hexOk=h=>/^#[0-9a-f]{6}$/i.test(h||'')?h:'#cccccc';
+const use=n=>{try{return window.claude&&window.claude.use?window.claude.use(n).catch(()=>null):Promise.resolve(null)}catch(e){return Promise.resolve(null)}};
+const FF='"Huninn","M PLUS Rounded 1c","Noto Sans TC","PingFang TC","Hiragino Sans","Apple SD Gothic Neo","Noto Sans CJK JP","Malgun Gothic",system-ui,sans-serif';
+const LANGS={zh:'中文',ja:'日本語',ko:'한국어',en:'English'};
+const KEYS=['name','age','gender','basic','look','outfit','pers','must','ng','other'];
+const SHORT=['name','age','gender'],LONG=KEYS.filter(k=>!SHORT.includes(k));
+const LB={
+ zh:{name:'角色名稱',age:'年齡',gender:'性別',basic:'其他基本資料',look:'外貌',outfit:'服裝・配件',pers:'個性・表情',must:'必畫重點',ng:'NG／請避免',other:'其他',pal:'色票',ref:'參考圖',cm:'身高',sk:'示意圖',sub:'角色設定',refn:'另附 {n} 張參考圖'},
+ ja:{name:'キャラクター名',age:'年齢',gender:'性別',basic:'その他の基本情報',look:'外見',outfit:'服装・小物',pers:'性格・表情',must:'必ず描いてほしいポイント',ng:'NG・避けてほしいこと',other:'その他',pal:'カラーパレット',ref:'参考画像',cm:'身長',sk:'構図ラフ',sub:'キャラクター設定',refn:'参考画像 {n} 枚を添付します'},
+ ko:{name:'캐릭터 이름',age:'나이',gender:'성별',basic:'기타 기본 정보',look:'외모',outfit:'의상・소품',pers:'성격・표정',must:'꼭 그려주셨으면 하는 포인트',ng:'NG・피해주셨으면 하는 것',other:'기타',pal:'컬러 팔레트',ref:'참고 이미지',cm:'키',sk:'구도 러프',sub:'캐릭터 설정',refn:'참고 이미지 {n}장 첨부'},
+ en:{name:'Character name',age:'Age',gender:'Gender',basic:'Other basics',look:'Appearance',outfit:'Outfit & accessories',pers:'Personality & expression',must:'Must-haves',ng:'Please avoid',other:'Other notes',pal:'Colour palette',ref:'References',cm:'Height',sk:'Layout sketch',sub:'Character sheet',refn:'{n} reference image(s) attached'}};
+const PH={name:'角色名字',age:'例如：17 歲',gender:'例如：女',basic:'種族、職業、生日、身分…',look:'髮型、髮色、瞳色、體型、痣或疤等特徵',outfit:'常穿的衣服、飾品、武器…',pers:'個性、常見表情、小動作',must:'一定要畫到的地方，例如淚痣、耳環',ng:'不想要的畫法，例如不要畫成長髮',other:'委託內容、想對繪師說的話、其他補充…'};
+
+/* ---------- storage ---------- */
+let idb=null;const mem={cards:{},sketches:{},orders:{},meta:{}};
+function openDB(){return new Promise(res=>{try{const r=indexedDB.open('commish-helper',3);r.onupgradeneeded=()=>{const d=r.result;['cards','sketches','orders','meta'].forEach(n=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n,{keyPath:'id'})})};r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);r.onblocked=()=>res(null)}catch(e){res(null)}})}
+function getAll(st){if(!idb)return Promise.resolve(Object.values(mem[st]));return new Promise(res=>{try{const q=idb.transaction(st).objectStore(st).getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([])}catch(e){res([])}})}
+function put(st,o){mem[st][o.id]=o;if(idb)try{idb.transaction(st,'readwrite').objectStore(st).put(o)}catch(e){showWarn()}}
+function del(st,id){delete mem[st][id];if(idb)try{idb.transaction(st,'readwrite').objectStore(st).delete(id)}catch(e){}}
+function showWarn(){const w=$('#warn');w.hidden=false;w.textContent='這個瀏覽器目前無法長期保存資料，關掉頁面就會消失，請到「備份」下載備份檔。'}
+const timers={};function later(key,fn,ms=400){clearTimeout(timers[key]);timers[key]=setTimeout(fn,ms)}
+
+let cards=[],sketches=[],cur=null,lang='zh';
+
+/* ---------- modal ---------- */
+const modal=$('#modal'),sheet=$('#sheet');
+function openModal(html){sheet.innerHTML=html;modal.hidden=false;const f=sheet.querySelector('button.pri,button');f&&f.focus()}
+function closeModal(){modal.hidden=true;sheet.innerHTML=''}
+modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('[data-close]'))closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)closeModal()});
+function ask(msg,okText,fn){openModal(`<h3>${esc(msg)}</h3><div class="acts"><button class="btn" data-close>取消</button><button class="btn pri" id="askOk">${esc(okText)}</button></div>`);$('#askOk').onclick=()=>{closeModal();fn()}}
+function prompt2(title,val,fn){openModal(`<h3>${esc(title)}</h3><input id="pIn" value="${esc(val)}"><div class="acts"><button class="btn" data-close>取消</button><button class="btn pri" id="pOk">確定</button></div>`);const i=$('#pIn');i.focus();i.select();const go=()=>{const v=i.value.trim();closeModal();if(v)fn(v)};$('#pOk').onclick=go;i.onkeydown=e=>{if(e.key==='Enter')go()}}
+
+/* ---------- views ---------- */
+function show(v){document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));const t=v==='edit'?'cards':v==='oedit'?'orders':v;document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));window.scrollTo(0,0);if(v==='sketch')enterSketch();if(v==='backup'){storageInfo();renderLangs()}if(v==='cards')renderCards();if(v==='orders')renderOrders()}
+document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)show(b.dataset.tab)});
+
+/* ---------- card list ---------- */
+function renderCards(){const g=$('#cardGrid');cards.sort((a,b)=>(b.updated||0)-(a.updated||0));
+ if(!cards.length){g.innerHTML='<div class="empty">還沒有角色。按「＋ 新角色」建立第一張角色卡。</div>';return}
+ g.innerHTML=cards.map(c=>{const col=hexOk(c.pal[0]&&c.pal[0].hex);const cover=c.photos[0];const tr=Object.keys(c.tr||{}).length;
+ return `<button class="cc" data-id="${esc(c.id)}"><span class="cv" style="background:${col}">${cover?`<img src="${esc(cover)}" alt="">`:`<b>${esc([...(c.f.name||'？')][0])}</b>`}</span><span class="strip">${c.pal.slice(0,6).map(p=>`<i style="background:${hexOk(p.hex)}"></i>`).join('')}</span><span class="nm">${esc(c.f.name||'未命名角色')}</span><span class="meta">${c.photos.length} 張圖${c.cm?` ・ ${esc(c.cm)}cm`:''}${tr?' ・ 已翻譯':''}</span></button>`}).join('')}
+$('#cardGrid').addEventListener('click',e=>{const b=e.target.closest('.cc');if(b)openCard(b.dataset.id)});
+function migrateCard(c){const mv=o=>{if(!o||(o.req===undefined&&o.msg===undefined))return false;o.other=[o.other,o.req,o.msg].map(v=>(v||'').trim()).filter(Boolean).join('\n\n');delete o.req;delete o.msg;return true};let ch=mv(c.f);Object.values(c.tr).forEach(t=>{if(mv(t))ch=true});if(ch)put('cards',c);return c}
+function newCard(){return{id:uid(),f:{},tr:{},pal:[{hex:'#4a3530',label:'髮色'},{hex:'#8a5a3c',label:'瞳色'}],photos:[],cm:'',sk:'',updated:Date.now()}}
+$('#newCard').onclick=()=>{const c=newCard();cards.push(c);put('cards',c);openCard(c.id)};
+
+/* ---------- editor ---------- */
+const ve=$('#v-edit');
+function openCard(id){cur=cards.find(c=>c.id===id);if(!cur)return;lang='zh';show('edit');renderEdit()}
+function val(k){return lang==='zh'?(cur.f[k]||''):((cur.tr[lang]||{})[k]||'')}
+function palLabel(c,lg,i){return lg==='zh'?(c.pal[i].label||''):(((c.tr[lg]||{}).pal||[])[i]||'')}
+function renderEdit(){const c=cur,L=LB[lang];
+ const fld=k=>`<label class="fl"><span>${esc(L[k])}</span><textarea data-k="${k}" rows="2" placeholder="${lang==='zh'?esc(PH[k]):''}">${esc(val(k))}</textarea></label>`;
+ ve.innerHTML=`<div class="bar"><button class="btn ghost" id="back">← 角色列表</button><span class="saved" id="saved"></span></div>
+ <div class="seg" role="tablist" aria-label="語言">${Object.entries(LANGS).map(([k,n])=>`<button role="tab" aria-selected="${k===lang}" data-lang="${k}" class="${k===lang?'on':''}">${n}</button>`).join('')}</div>
+ ${lang!=='zh'&&!c.tr[lang]?`<div class="note">還沒有${LANGS[lang]}版本。按下方「翻譯」匯出翻譯檔給 AI 翻，再匯入回來；也可以直接在這裡手動填寫。</div>`:''}
+ ${lang!=='zh'&&c.tr[lang]?`<div class="note">這是翻譯版本，可以直接修改；重新匯入翻譯會覆蓋這裡的內容。</div>`:''}
+ <label class="fl big"><span>${esc(L.name)}</span><input data-k="name" value="${esc(val('name'))}" placeholder="${lang==='zh'?PH.name:''}"></label>
+ <h3 class="sec">${esc(L.ref)}（${c.photos.length}）</h3>
+ <div class="phs">${c.photos.map((p,i)=>`<div class="pt"><img src="${esc(p)}" alt="參考圖 ${i+1}" data-view="${i}"><button class="x" data-phdel="${i}" aria-label="刪除第 ${i+1} 張">×</button></div>`).join('')}<button class="padd" id="addPh">＋<small>加入照片</small></button></div>
+ <div class="three">${['age','gender'].map(k=>`<label class="fl"><span>${esc(L[k])}</span><input data-k="${k}" value="${esc(val(k))}" placeholder="${lang==='zh'?PH[k]:''}"${k==='gender'?' list="genderList"':''}></label>`).join('')}<label class="fl"><span>${esc(L.cm)}（cm）</span><input type="number" inputmode="numeric" min="20" max="300" data-cm value="${esc(c.cm)}" placeholder="158"></label></div><datalist id="genderList"><option value="女"><option value="男"><option value="無性別"><option value="不明"></datalist>
+ <div class="two">
+ <label class="fl"><span>圖卡附上示意圖</span><select data-sk><option value="">不附</option>${sketches.map(s=>`<option value="${esc(s.id)}"${s.id===c.sk?' selected':''}>${esc(s.name)}</option>`).join('')}</select></label></div>
+ <h3 class="sec">${esc(L.pal)}</h3>
+ <div>${c.pal.map((p,i)=>`<div class="sw"><input type="color" data-pi="${i}" value="${hexOk(p.hex)}" aria-label="顏色 ${i+1}"><input data-pl="${i}" value="${esc(palLabel(c,lang,i))}" placeholder="${lang==='zh'?'例如：髮色':''}" aria-label="顏色名稱"><button class="x" data-pdel="${i}" aria-label="刪除顏色">×</button></div>`).join('')}</div>
+ ${c.pal.length<8?'<button class="btn sm" id="addPal" style="margin-bottom:18px">＋ 加顏色</button>':''}
+ ${LONG.map(fld).join('')}
+ <div class="actbar"><button class="btn pri" id="trBtn">翻譯</button><button class="btn" id="exBtn">匯出</button><button class="btn danger" id="delCard">刪除</button></div>`;
+ ve.querySelectorAll('textarea').forEach(grow)}
+function grow(t){t.style.height='auto';t.style.height=Math.min(t.scrollHeight+4,420)+'px'}
+function touch(){cur.updated=Date.now();const c=cur;later('c'+c.id,()=>{put('cards',c);const s=$('#saved');if(s){s.textContent='✓ 已存到手機';s.style.opacity=1;later('sv',()=>{s.style.opacity=0},1500)}})}
+ve.addEventListener('input',e=>{const t=e.target,c=cur;if(!c)return;
+ if(t.dataset.k){if(lang==='zh')c.f[t.dataset.k]=t.value;else(c.tr[lang]||(c.tr[lang]={}))[t.dataset.k]=t.value;if(t.tagName==='TEXTAREA')grow(t);touch()}
+ else if(t.dataset.pi!==undefined){c.pal[+t.dataset.pi].hex=t.value;touch()}
+ else if(t.dataset.pl!==undefined){const i=+t.dataset.pl;if(lang==='zh')c.pal[i].label=t.value;else{const tr=c.tr[lang]||(c.tr[lang]={});(tr.pal||(tr.pal=[]))[i]=t.value}touch()}
+ else if(t.hasAttribute('data-cm')){c.cm=t.value;touch()}});
+ve.addEventListener('change',e=>{if(e.target.hasAttribute('data-sk')){cur.sk=e.target.value;touch()}});
+ve.addEventListener('click',e=>{const t=e.target,c=cur;
+ const lb=t.closest('[data-lang]');if(lb){lang=lb.dataset.lang;renderEdit();return}
+ if(t.id==='back'){show('cards');return}
+ if(t.closest('#addPh')){$('#photoIn').click();return}
+ if(t.dataset.phdel!==undefined){const i=+t.dataset.phdel;ask('刪除這張參考圖？','刪除',()=>{c.photos.splice(i,1);touch();renderEdit()});return}
+ if(t.dataset.view!==undefined){viewPhoto(+t.dataset.view);return}
+ if(t.id==='addPal'){c.pal.push({hex:['#1d2236','#c98a3a','#e8b4a0','#3d5a80','#f2c230','#8d5a97','#4c8c6c','#e5e5e5'][c.pal.length%8],label:''});touch();renderEdit();return}
+ if(t.dataset.pdel!==undefined){const i=+t.dataset.pdel;c.pal.splice(i,1);Object.values(c.tr).forEach(tr=>tr.pal&&tr.pal.splice(i,1));touch();renderEdit();return}
+ if(t.id==='trBtn'){const c=cur;trHub([c],[],l=>{if(cur===c){lang=l;renderEdit()}});return}
+ if(t.id==='exBtn'){exSheet();return}
+ if(t.id==='delCard'){ask(`刪除「${c.f.name||'未命名角色'}」？照片也會一起刪除。`,'刪除',()=>{cards=cards.filter(x=>x!==c);del('cards',c.id);cur=null;show('cards')})}});
+function viewPhoto(i){openModal(`<div class="big"><img src="${esc(cur.photos[i])}" alt="參考圖"></div><p class="mute">長按圖片可以存回相簿。</p><div class="acts"><button class="btn" id="cover"${i===0?' disabled':''}>設為封面</button><button class="btn pri" data-close>關閉</button></div>`);$('#cover').onclick=()=>{const p=cur.photos.splice(i,1)[0];cur.photos.unshift(p);touch();closeModal();renderEdit()}}
+const loadImg=src=>new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src});
+async function shrink(file){const u=URL.createObjectURL(file);try{const im=await loadImg(u);const r=Math.min(1,1400/Math.max(im.naturalWidth,im.naturalHeight));const c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*r);c.height=Math.round(im.naturalHeight*r);c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.86)}finally{URL.revokeObjectURL(u)}}
+$('#photoIn').addEventListener('change',async e=>{const fs=[...e.target.files].slice(0,20);e.target.value='';if(!cur)return;for(const f of fs){try{cur.photos.push(await shrink(f))}catch(err){}}touch();renderEdit()});
+
+/* ---------- AI translate ---------- */
+const TR_NAMES={ja:'Japanese',ko:'Korean',en:'English'};
+async function aiTranslate(kind,src,langs,onText){const sample=await use('sample');if(!sample)throw{code:'unavailable'};
+ const keys=Object.keys(src),shape=keys.map(k=>`"${k}":${Array.isArray(src[k])?'[]':'""'}`).join(',');
+ const prompt=`You help a Taiwanese fan commission art from an illustrator. Translate this ${kind} from Traditional Chinese into: ${langs.map(l=>TR_NAMES[l]||LANGS[l]).join(', ')}.
+Rules:
+- Natural wording a native speaker uses when commissioning an artist. Japanese: polite です/ます toward the artist. Korean: polite 존댓말. English: clear and friendly.
+- A character "name": keep the original name and add the reading in the target language in brackets, e.g. 林小雨（リン・シャオユー）, 린샤오위(林小雨), Lin Xiaoyu (林小雨).
+- Use the terms artists in that language actually use (e.g. 立繪 → 立ち絵 / 스탠딩 일러스트 / full-body standing illustration; 透明背景 → 背景透過 / 투명 배경 / transparent background; 大頭貼 → アイコン / 프로필 / headshot).
+- Keep numbers, units, sizes, dates, prices, currency and line breaks. Do not add or drop information. Empty strings stay empty.
+- A list value (such as "pal", colour labels) comes back as a list of the same length.
+Return ONLY a JSON object with no markdown, shaped as {${langs.map(l=>`"${l}":{${shape}}`).join(',')}}.
+Source:
+${JSON.stringify(src)}`;
+ const r=await sample(prompt,{modelTier:'default',onText});const m=(r.text||'').match(/\{[\s\S]*\}/);if(!m)throw new Error('empty');return JSON.parse(m[0])}
+const trErr=err=>err&&err.code==='unavailable'?'這個開啟方式無法使用 AI 翻譯，請在 Claude 裡開啟這個頁面再試。':err&&err.code==='not_granted'?'沒有取得 AI 使用權限，請允許後再試一次。':err&&err.code==='rate_limited'?'使用太頻繁了，請稍等一下再試。':'翻譯失敗了，請再試一次。';
+async function translateCard(c,langs,onText){const src={};KEYS.forEach(k=>src[k]=c.f[k]||'');src.pal=c.pal.map(p=>p.label||'');
+ const obj=await aiTranslate('character sheet',src,langs,onText);let n=0;
+ langs.forEach(l=>{const o=obj[l];if(!o)return;const t={};KEYS.forEach(k=>t[k]=typeof o[k]==='string'?o[k]:'');t.pal=Array.isArray(o.pal)?o.pal.map(x=>String(x??'')):[];c.tr[l]=t;n++});
+ if(!n)throw new Error('empty');c.updated=Date.now();put('cards',c)}
+const langChecks=()=>`<div class="chips">${otherLangs().map(k=>`<label class="chk"><input type="checkbox" name="lg" value="${k}" checked>${LANGS[k]}</label>`).join('')}</div>`;
+function trSheet(){if(!(cur.f.name||KEYS.some(k=>cur.f[k]))){openModal('<h3>先填中文內容</h3><p>AI 會把「中文」分頁的內容翻成其他語言，請先填一些中文欄位。</p><div class="acts"><button class="btn pri" data-close>好</button></div>');return}
+ openModal(`<h3>AI 翻譯</h3><p class="mute">把「中文」分頁的內容翻成以下語言，會用委託繪師時的禮貌用語。已有的翻譯會被覆蓋。</p>${langChecks()}
+ <p id="trStat" class="mute" aria-live="polite"></p><div class="acts"><button class="btn" data-close>取消</button><button class="btn pri" id="trGo">開始翻譯</button></div>`);
+ $('#trGo').onclick=async()=>{const langs=[...sheet.querySelectorAll('[name=lg]:checked')].map(i=>i.value);const st=$('#trStat'),go=$('#trGo');if(!langs.length){st.textContent='請至少選一種語言';return}
+  go.disabled=true;st.textContent='連線中…';const c=cur;
+  try{await translateCard(c,langs,({text})=>{st.textContent=`翻譯中…（已收到 ${text.length} 字）`});closeModal();if(cur===c){lang=langs[0];renderEdit()}}
+  catch(err){go.disabled=false;st.textContent=trErr(err)}}}
+
+/* ---------- export ---------- */
+function getF(c,lg,k){return lg==='zh'?(c.f[k]||''):((c.tr[lg]||{})[k]||'')}
+function availLangs(c){return Object.keys(LANGS).filter(l=>l==='zh'||c.tr[l])}
+function cardText(c,lg){const L=LB[lg],o=[`■ ${getF(c,lg,'name')||'—'}`];['age','gender'].forEach(k=>{const v=getF(c,lg,k).trim();if(v)o.push(`${L[k]}: ${v}`)});if(c.cm)o.push(`${L.cm}: ${c.cm} cm`);
+ LONG.forEach(k=>{const v=getF(c,lg,k).trim();if(v)o.push('',`【${L[k]}】`,v)});
+ if(c.pal.length){o.push('',`【${L.pal}】`);c.pal.forEach((p,i)=>o.push(`${hexOk(p.hex).toUpperCase()}  ${palLabel(c,lg,i)}`))}
+ if(c.photos.length)o.push('',`【${L.ref}】`,L.refn.replace('{n}',c.photos.length));return o.join('\n')}
+const fname=s=>(s||'character').replace(/[\\/:*?"<>|\s]+/g,'_').slice(0,40);
+function exportSheet({av,start,text,image,base}){let lg=av.includes(start)?start:'zh';
+ const draw=()=>{openModal(`<h3>匯出</h3><p class="mute">選擇語言${av.length<4?'（其他語言要先按「AI 翻譯」）':''}</p>
+ <div class="chips">${av.map(l=>`<button data-l="${l}" class="${l===lg?'on':''}">${LANGS[l]}</button>`).join('')}${av.length>1?`<button data-l="all" class="${lg==='all'?'on':''}">全部語言（文字）</button>`:''}</div>
+ <div class="acts"><button class="btn" id="exTxt">文字檔 .txt</button><button class="btn pri" id="exImg"${lg==='all'?' disabled':''}>圖卡 .png</button></div><p class="mute" id="exStat" aria-live="polite"></p>`);
+ sheet.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{lg=b.dataset.l;draw()});
+ $('#exTxt').onclick=()=>{const t=lg==='all'?av.map(l=>`===== ${LANGS[l]} =====\n${text(l)}`).join('\n\n\n'):text(lg);
+  showOut({blob:new Blob([t],{type:'text/plain;charset=utf-8'}),filename:`${base}_${lg}.txt`,text:t})};
+ $('#exImg').onclick=async()=>{$('#exStat').textContent='產生圖卡中…';try{const cv=await image(lg);cv.toBlob(b=>showOut({blob:b,filename:`${base}_${lg}.png`}),'image/png')}catch(e){$('#exStat').textContent='圖卡產生失敗，請再試一次。'}}};draw()}
+function exSheet(){const c=cur;exportSheet({av:availLangs(c),start:lang,base:fname(c.f.name),text:l=>cardText(c,l),image:l=>cardImage(c,l)})}
+let lastUrl=null;
+function showOut({blob,filename,text,note}){if(lastUrl)URL.revokeObjectURL(lastUrl);lastUrl=text?null:URL.createObjectURL(blob);
+ openModal(`<h3>${text?'文字檔':'圖片'}預覽</h3>${text?`<pre class="prev">${esc(text)}</pre>`:`<img class="prev" src="${lastUrl}" alt="匯出預覽"><p class="mute">也可以長按圖片，直接存到相簿或分享。</p>`}
+ ${note?`<p class="note" style="margin:10px 0 0">${esc(note)}</p>`:''}<div class="acts">${text?'<button class="btn pri" id="cpy">複製文字</button>':''}<button class="btn${text?'':' pri'}" id="dlb">下載</button></div><p class="mute" id="dls" aria-live="polite"></p>`);
+ if(text)$('#cpy').onclick=async()=>{try{await navigator.clipboard.writeText(text);$('#dls').textContent='已複製，可以直接貼給繪師。'}catch(e){$('#dls').textContent='無法自動複製，請長按上面的文字選取。'}};
+ $('#dlb').onclick=()=>saveFile(blob,filename,$('#dls'))}
+async function saveFile(blob,filename,st){const dl=await use('downloads');if(!dl){try{const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}catch(e){}st.textContent=blob.type.startsWith('image')?'已開始下載。如果沒有反應，請長按圖片儲存。':'已開始下載。如果沒有反應，請用「複製文字」。';return}
+ try{await dl.save({filename,data:blob});st.textContent='已送出下載：'+filename}catch(e){st.textContent='沒有完成下載'+(blob.type.startsWith('image')?'，也可以長按圖片儲存。':'。')}}
+
+/* image cards, drawn from blocks */
+const TOK=/[⺀-鿿豈-﫿＀-￯　-〿]|[^\s⺀-鿿豈-﫿＀-￯　-〿]+|\s+/g;
+function wrap(x,text,max){const out=[];for(const para of String(text).split('\n')){let line='';for(const t of(para.match(TOK)||[''])){const test=line+t;if(line.trim()&&x.measureText(test).width>max){out.push(line.trimEnd());line=t.trimStart()}else line=test}out.push(line.trimEnd())}return out}
+const lum=h=>{const n=parseInt(h.slice(1),16);return(.299*(n>>16)+.587*(n>>8&255)+.114*(n&255))/255};
+function rr(x,X,Y,w,h,r){x.beginPath();if(x.roundRect)x.roundRect(X,Y,w,h,r);else x.rect(X,Y,w,h)}
+const topCol=c=>c.pal[0]?hexOk(c.pal[0].hex):'#4a3a48';
+async function loadImgs(list,n){const out=[];for(const p of list.slice(0,n)){try{out.push(await loadImg(p))}catch(e){}}return out}
+function paintBlocks(x,B,dry){const CW=1080,PAD=64,IW=CW-PAD*2,F=(w,s)=>`${w} ${s}px ${FF}`,INK='#2e2630',ACC=theme()[4];let y=0;x.textBaseline='top';
+ if(!dry){x.fillStyle='#fff';x.fillRect(0,0,CW,x.canvas.height)}
+ const contain=(im,X,Y,w,h)=>{x.save();rr(x,X,Y,w,h,18);x.fillStyle='#f3f1f4';x.fill();x.clip();const r=Math.min(w/im.width,h/im.height),dw=im.width*r,dh=im.height*r;x.drawImage(im,X+(w-dw)/2,Y+(h-dh)/2,dw,dh);x.restore()};
+ for(const b of B){
+  if(b.t==='hero'){x.font=F(900,72);const nl=wrap(x,b.title||'—',IW),hh=PAD+nl.length*86+60+PAD*.7;if(!dry){x.fillStyle=b.color;x.fillRect(0,y,CW,hh);x.fillStyle=lum(b.color)<.6?'#fff':INK;nl.forEach((l,i)=>x.fillText(l,PAD,y+PAD+i*86));x.font=F(500,30);x.fillText(b.sub,PAD,y+PAD+nl.length*86+14)}y+=hh;
+   if(b.stripe&&b.stripe.length>1){if(!dry){const w=CW/b.stripe.length;b.stripe.forEach((c,i)=>{x.fillStyle=c;x.fillRect(i*w,y,w+1,14)})}y+=14}y+=PAD*.8}
+  else if(b.t==='sub'){y+=PAD*.3;if(!dry){rr(x,PAD,y,IW,92,46);x.fillStyle=b.color;x.fill();x.fillStyle=lum(b.color)<.6?'#fff':INK;x.font=F(800,40);x.fillText(b.text,PAD+36,y+24)}y+=92+PAD*.5}
+  else if(b.t==='label'){if(!dry){x.font=F(700,28);x.fillStyle=ACC;x.fillText(b.text,PAD,y)}y+=46}
+  else if(b.t==='text'){x.font=F(500,32);const ls=wrap(x,b.text,IW);if(!dry){x.fillStyle=INK;ls.forEach((l,i)=>x.fillText(l,PAD,y+i*50))}y+=ls.length*50+PAD*.55}
+  else if(b.t==='kv'){const kw=290;b.rows.forEach(([k,v])=>{x.font=F(500,31);const ls=wrap(x,v,IW-kw);if(!dry){x.fillStyle=INK;ls.forEach((l,i)=>x.fillText(l,PAD+kw,y+i*46));x.font=F(700,28);x.fillStyle=ACC;x.fillText(k,PAD,y+3)}y+=ls.length*46+16});if(!dry){x.strokeStyle='#eee8ee';x.lineWidth=2;x.beginPath();x.moveTo(PAD,y);x.lineTo(CW-PAD,y);x.stroke()}y+=PAD*.6}
+  else if(b.t==='imgs'){const im=b.imgs;if(!im.length)continue;const cols=im.length===1?1:2,gap=16,cw=(IW-gap*(cols-1))/cols;
+   if(cols===1){const h=Math.min(b.max||1200,cw*im[0].height/im[0].width);if(!dry)contain(im[0],PAD,y,cw,h);y+=h}
+   else{const ch=cw*4/3;im.forEach((m,i)=>{if(!dry)contain(m,PAD+(i%2)*(cw+gap),y+Math.floor(i/2)*(ch+gap),cw,ch)});y+=Math.ceil(im.length/2)*(ch+gap)-gap}y+=PAD*.7}
+  else if(b.t==='canvas'){const h=IW*b.c.height/b.c.width;if(!dry){x.save();rr(x,PAD,y,IW,h,18);x.clip();x.drawImage(b.c,PAD,y,IW,h);x.restore();rr(x,PAD,y,IW,h,18);x.strokeStyle='#eee8ee';x.lineWidth=2;x.stroke()}y+=h+PAD*.7}
+  else if(b.t==='pal'){const sz=124,g=22,per=Math.floor((IW+g)/(sz+g));b.items.forEach((p,i)=>{const X=PAD+(i%per)*(sz+g),Y=y+Math.floor(i/per)*(sz+100);if(!dry){rr(x,X,Y,sz,sz,22);x.fillStyle=p.hex;x.fill();x.strokeStyle='#eee8ee';x.lineWidth=2;x.stroke();x.fillStyle=INK;x.font=F(700,22);x.fillText(p.hex.toUpperCase(),X,Y+sz+10);x.font=F(500,22);x.fillStyle='#7a6f78';x.fillText(wrap(x,p.label,sz+g-6)[0]||'',X,Y+sz+40)}});y+=Math.ceil(b.items.length/per)*(sz+100)-24+PAD*.6}}
+ return Math.ceil(y+PAD*.6)}
+async function renderBlocks(B){try{await document.fonts.ready}catch(e){}const m=document.createElement('canvas');m.width=1080;m.height=10;const h=paintBlocks(m.getContext('2d'),B,true);
+ const c=document.createElement('canvas');c.width=1080;c.height=Math.min(h,16000);paintBlocks(c.getContext('2d'),B,false);return c}
+function cardBlocks(c,lg,imgs,skc,compact){const L=LB[lg],get=k=>getF(c,lg,k),B=[];
+ if(compact)B.push({t:'sub',text:(get('name')||'—')+(c.cm?`　${c.cm} cm`:''),color:topCol(c)});
+ else B.push({t:'hero',title:get('name'),sub:L.sub,color:topCol(c),stripe:c.pal.map(p=>hexOk(p.hex))});
+ const kv=[['age',get('age').trim()],['gender',get('gender').trim()],['cm',c.cm?c.cm+' cm':'']].filter(r=>r[1]).map(([k,v])=>[L[k],v]);if(kv.length)B.push({t:'kv',rows:kv});
+ if(imgs.length)B.push({t:'label',text:L.ref},{t:'imgs',imgs,max:compact?900:1200});
+ if(skc)B.push({t:'label',text:L.sk},{t:'canvas',c:skc});
+ if(c.pal.length)B.push({t:'label',text:L.pal},{t:'pal',items:c.pal.map((p,i)=>({hex:hexOk(p.hex),label:palLabel(c,lg,i)}))});
+ LONG.forEach(k=>{const v=get(k).trim();if(v)B.push({t:'label',text:L[k]},{t:'text',text:v})});return B}
+async function cardImage(c,lg){const imgs=await loadImgs(c.photos,6),sk=c.sk&&sketches.find(s=>s.id===c.sk);return renderBlocks(cardBlocks(c,lg,imgs,sk?sketchCanvas(sk):null,false))}
+
+/* ---------- commission orders ---------- */
+const OKEYS=['title','size','budget','scene','pose','notes'];
+const LO={zh:{title:'委託名稱',artist:'繪師',frame:'構圖範圍',chars:'委託角色',count:'人數',bg:'背景',use:'用途',size:'尺寸・格式',due:'期限',budget:'預算',scene:'構圖・情境',pose:'表情・動作',notes:'其他備註',sk:'示意圖',head:'委託單',people:'{n} 人',char:'角色'},
+ ja:{title:'依頼タイトル',artist:'絵師様',frame:'構図の範囲',chars:'依頼キャラクター',count:'人数',bg:'背景',use:'用途',size:'サイズ・形式',due:'希望納期',budget:'ご予算',scene:'構図・シチュエーション',pose:'表情・ポーズ',notes:'その他・備考',sk:'構図ラフ',head:'ご依頼内容',people:'{n}人',char:'キャラクター'},
+ ko:{title:'의뢰 제목',artist:'작가님',frame:'구도 범위',chars:'의뢰 캐릭터',count:'인원',bg:'배경',use:'용도',size:'사이즈・형식',due:'희망 마감일',budget:'예산',scene:'구도・상황',pose:'표정・포즈',notes:'기타 요청 사항',sk:'구도 러프',head:'의뢰서',people:'{n}명',char:'캐릭터'},
+ en:{title:'Commission title',artist:'Artist',frame:'Framing',chars:'Characters',count:'Characters',bg:'Background',use:'Usage',size:'Size & format',due:'Deadline',budget:'Budget',scene:'Composition & scene',pose:'Expression & pose',notes:'Other notes',sk:'Layout sketch',head:'Commission request',people:'{n} character(s)',char:'Character'}};
+const FR={zh:{head:'大頭貼',bust:'胸口',half:'半身',full:'全身'},ja:{head:'アイコン（顔アップ）',bust:'バストアップ',half:'腰上（半身）',full:'全身'},ko:{head:'얼굴(프로필)',bust:'흉상(바스트업)',half:'반신',full:'전신'},en:{head:'Headshot',bust:'Bust-up',half:'Half body (waist-up)',full:'Full body'}};
+const BGS={zh:{none:'透明背景',simple:'簡單背景',full:'完整背景'},ja:{none:'背景透過',simple:'簡易背景',full:'背景あり（描き込み）'},ko:{none:'투명 배경',simple:'간단한 배경',full:'풀 배경'},en:{none:'Transparent background',simple:'Simple background',full:'Full background'}};
+const USES={zh:{personal:'個人使用',commercial:'商業使用'},ja:{personal:'個人利用（非商用）',commercial:'商用利用'},ko:{personal:'개인 소장(비상업)',commercial:'상업적 이용'},en:{personal:'Personal use',commercial:'Commercial use'}};
+const STATUS={draft:'草稿',ask:'詢價中',doing:'進行中',done:'已完成'};
+const OPH={title:'例如：小雨生日賀圖',size:'例如：2000×3000px、300dpi、PNG',budget:'例如：NT$3,000',scene:'想要的構圖、背景、情境，例如：兩人在雨中共撐一把傘',pose:'表情、動作，例如：小雨害羞地笑、朋友在旁邊揮手',notes:'其他想說的，例如：可以公開在社群、希望保留過程檔'};
+const FRVB={head:'2 -1 36 36',bust:'-5 -2 50 50',half:'-13 -2 66 66',full:'-31 -3 102 102'};
+const FIGSVG='<circle cx="20" cy="12" r="9" fill="var(--p)"/><path d="M6 52Q6 26 20 25Q34 26 34 52L31 52 30 97 22 97 20 64 18 97 10 97 9 52Z" fill="var(--p)" opacity=".75"/>';
+const frTiles=(on,attr)=>`<div class="frs" role="radiogroup" aria-label="構圖範圍">${Object.keys(FR.zh).map(k=>`<button class="fr${on===k?' on':''}" ${attr}="${k}" role="radio" aria-checked="${on===k}"><svg viewBox="${FRVB[k]}" aria-hidden="true">${FIGSVG}</svg>${FR.zh[k]}</button>`).join('')}</div>`;
+let orders=[],ocur=null,olang='zh';
+const vo=$('#v-oedit');
+function newOrder(){return{id:uid(),f:{},tr:{},artist:'',frame:'half',bg:'simple',use:'personal',due:'',status:'draft',chars:[],sk:'',updated:Date.now()}}
+const ochars=o=>o.chars.map(id=>cards.find(c=>c.id===id)).filter(Boolean);
+const avatar=c=>`<span style="background:${topCol(c)}">${c.photos[0]?`<img src="${esc(c.photos[0])}" alt="">`:esc([...(c.f.name||'？')][0])}</span>`;
+function renderOrders(){const L=$('#orderList');orders.sort((a,b)=>(b.updated||0)-(a.updated||0));
+ if(!orders.length){L.innerHTML='<div class="empty">還沒有委託。按「＋ 委新圖」填一張委託單，再把要畫的角色卡加進來。</div>';return}
+ L.innerHTML=orders.map(o=>{const cs=ochars(o);return`<button class="oc" data-oid="${esc(o.id)}"><span class="av">${cs.slice(0,4).map(avatar).join('')||'<span>？</span>'}</span><span class="tx"><b>${esc(o.f.title||'未命名委託')}</b><span class="mute">${FR.zh[o.frame]||''} ・ ${cs.length} 人${o.artist?' ・ '+esc(o.artist):''}${o.due?' ・ '+esc(o.due):''}</span></span><span class="pill${o.status==='doing'?' hot':''}">${STATUS[o.status]||'草稿'}</span></button>`}).join('')}
+$('#orderList').addEventListener('click',e=>{const b=e.target.closest('[data-oid]');if(b)openOrder(b.dataset.oid)});
+$('#newOrder').onclick=()=>{const o=newOrder();orders.push(o);put('orders',o);openOrder(o.id)};
+function openOrder(id){ocur=orders.find(o=>o.id===id);if(!ocur)return;olang='zh';show('oedit');renderOEdit()}
+const ov=k=>olang==='zh'?(ocur.f[k]||''):((ocur.tr[olang]||{})[k]||'');
+const chipRow=(name,map,on)=>`<div class="chips" role="radiogroup">${Object.entries(map).map(([k,v])=>`<button data-${name}="${k}" class="${on===k?'on':''}" role="radio" aria-checked="${on===k}">${v}</button>`).join('')}</div>`;
+function renderOEdit(){const o=ocur,L=LO[olang],cs=ochars(o),zh=olang==='zh';
+ const fld=k=>`<label class="fl"><span>${esc(L[k])}</span><textarea data-ok="${k}" rows="2" placeholder="${zh?esc(OPH[k]):''}">${esc(ov(k))}</textarea></label>`;
+ const inp=k=>`<label class="fl"><span>${esc(L[k])}</span><input data-ok="${k}" value="${esc(ov(k))}" placeholder="${zh?esc(OPH[k]):''}"></label>`;
+ vo.innerHTML=`<div class="bar"><button class="btn ghost" id="oBack">← 委託列表</button><span class="saved" id="osaved"></span></div>
+ <div class="seg" role="tablist" aria-label="語言">${Object.entries(LANGS).map(([k,n])=>`<button role="tab" aria-selected="${k===olang}" data-olang="${k}" class="${k===olang?'on':''}">${n}</button>`).join('')}</div>
+ ${!zh?`<div class="note">${o.tr[olang]?'這是翻譯版本，可以直接修改。選項（構圖範圍、背景、用途）匯出時會自動換成這個語言。':`還沒有${LANGS[olang]}版本。按下方「翻譯」匯出翻譯檔給 AI 翻，再匯入回來；也可以直接手動填寫。`}</div>`:''}
+ <label class="fl big"><span>${esc(L.title)}</span><input data-ok="title" value="${esc(ov('title'))}" placeholder="${zh?OPH.title:''}"></label>
+ <h3 class="sec">${esc(L.frame)}</h3>${frTiles(o.frame,'data-ofr')}
+ <h3 class="sec">${esc(L.chars)}（${cs.length} 人）</h3>
+ <div class="mcs">${cs.map(c=>`<div class="mc"><span class="av">${avatar(c)}</span><span class="tx">${esc(c.f.name||'未命名角色')}${c.cm?`<small>${esc(c.cm)}cm</small>`:''}</span><button class="btn sm ghost" data-ogo="${esc(c.id)}">查看</button><button class="ib" data-orm="${esc(c.id)}" aria-label="移除">×</button></div>`).join('')||'<p class="mute" style="margin:0">還沒有加入角色。</p>'}</div>
+ <button class="btn sm" id="oAddChar" style="margin-bottom:20px">＋ 加入角色卡</button>
+ <h3 class="sec">${esc(L.bg)}</h3>${chipRow('obg',BGS.zh,o.bg)}
+ <h3 class="sec" style="margin-top:12px">${esc(L.use)}</h3>${chipRow('ouse',USES.zh,o.use)}
+ <div style="height:12px"></div>
+ <div class="two">${inp('size')}${inp('budget')}</div>
+ <div class="two"><label class="fl"><span>${esc(L.due)}</span><input type="date" data-odue value="${esc(o.due)}"></label><label class="fl"><span>${esc(L.artist)}（不翻譯）</span><input data-oart value="${esc(o.artist)}" placeholder="繪師名字或帳號"></label></div>
+ ${fld('scene')}${fld('pose')}${fld('notes')}
+ <h3 class="sec">${esc(L.sk)}</h3>
+ <div class="two"><label class="fl"><span>附上示意圖</span><select data-osk><option value="">不附</option>${sketches.map(s=>`<option value="${esc(s.id)}"${s.id===o.sk?' selected':''}>${esc(s.name)}</option>`).join('')}</select></label>
+ <div class="fl"><span style="display:block;font-size:14px;font-weight:800;margin:0 0 6px 4px">　</span><button class="btn" id="oMkSk" style="width:100%"${cs.length?'':' disabled'}>用這些角色畫示意圖</button></div></div>
+ <h3 class="sec">進度（只有你看得到）</h3>${chipRow('ost',STATUS,o.status)}
+ <div class="actbar"><button class="btn pri" id="oTr">翻譯</button><button class="btn" id="oEx">匯出</button><button class="btn danger" id="oDel">刪除</button></div>`;
+ vo.querySelectorAll('textarea').forEach(grow)}
+function otouch(){const o=ocur;o.updated=Date.now();later('o'+o.id,()=>{put('orders',o);const s=$('#osaved');if(s){s.textContent='✓ 已存到手機';s.style.opacity=1;later('osv',()=>{s.style.opacity=0},1500)}})}
+vo.addEventListener('input',e=>{const t=e.target,o=ocur;if(!o)return;
+ if(t.dataset.ok){if(olang==='zh')o.f[t.dataset.ok]=t.value;else(o.tr[olang]||(o.tr[olang]={}))[t.dataset.ok]=t.value;if(t.tagName==='TEXTAREA')grow(t);otouch()}
+ else if(t.hasAttribute('data-oart')){o.artist=t.value;otouch()}
+ else if(t.hasAttribute('data-odue')){o.due=t.value;otouch()}});
+vo.addEventListener('change',e=>{if(e.target.hasAttribute('data-osk')){ocur.sk=e.target.value;otouch()}});
+vo.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;const o=ocur;
+ const pick=(k,f)=>{if(t.dataset[k]!==undefined){o[f]=t.dataset[k];otouch();renderOEdit();return true}};
+ if(t.dataset.olang){olang=t.dataset.olang;renderOEdit();return}
+ if(pick('ofr','frame')||pick('obg','bg')||pick('ouse','use')||pick('ost','status'))return;
+ if(t.id==='oBack'){show('orders');return}
+ if(t.dataset.orm){o.chars=o.chars.filter(id=>id!==t.dataset.orm);otouch();renderOEdit();return}
+ if(t.dataset.ogo){openCard(t.dataset.ogo);return}
+ if(t.id==='oAddChar'){charPicker();return}
+ if(t.id==='oMkSk'){sketchFromOrder(o);return}
+ if(t.id==='oTr'){trHub(ochars(o),[o],l=>{if(ocur===o){olang=l;renderOEdit()}});return}
+ if(t.id==='oEx'){exportSheet({av:Object.keys(LANGS).filter(l=>l==='zh'||o.tr[l]),start:olang,base:fname(o.f.title||'委託單'),text:l=>orderText(o,l),image:l=>orderImage(o,l)});return}
+ if(t.id==='oDel')ask(`刪除委託「${o.f.title||'未命名委託'}」？（角色卡不會被刪除）`,'刪除',()=>{orders=orders.filter(x=>x!==o);del('orders',o.id);ocur=null;show('orders')})});
+function charPicker(){const o=ocur;
+ openModal(`<h3>加入角色卡</h3>${cards.length?`<div class="mcs">${cards.map(c=>`<label class="mc" style="cursor:pointer"><span class="av">${avatar(c)}</span><span class="tx">${esc(c.f.name||'未命名角色')}${c.cm?`<small>${esc(c.cm)}cm</small>`:''}</span><input type="checkbox" value="${esc(c.id)}"${o.chars.includes(c.id)?' checked':''} style="width:24px;height:24px;margin-right:8px;accent-color:var(--p)"></label>`).join('')}</div>`:'<p class="mute">還沒有角色卡，先建立一張吧。</p>'}
+ <div class="acts"><button class="btn" id="pkNew">＋ 建立新角色卡</button><button class="btn pri" id="pkOk">完成</button></div>`);
+ $('#pkOk').onclick=()=>{const sel=[...sheet.querySelectorAll('input:checked')].map(i=>i.value);o.chars=o.chars.filter(id=>sel.includes(id)).concat(sel.filter(id=>!o.chars.includes(id)));otouch();closeModal();renderOEdit()};
+ $('#pkNew').onclick=()=>{const c=newCard();cards.push(c);put('cards',c);o.chars.push(c.id);otouch();closeModal();openCard(c.id)}}
+function orderRows(o,lg){const L=LO[lg],get=k=>lg==='zh'?(o.f[k]||''):((o.tr[lg]||{})[k]||''),n=ochars(o).length;
+ return[[L.frame,FR[lg][o.frame]],[L.count,n?L.people.replace('{n}',n):''],[L.bg,BGS[lg][o.bg]],[L.use,USES[lg][o.use]],[L.size,get('size').trim()],[L.due,o.due],[L.budget,get('budget').trim()]].filter(r=>r[1])}
+const cardLang=(c,lg)=>lg==='zh'||c.tr[lg]?lg:'zh';
+function orderText(o,lg){const L=LO[lg],get=k=>lg==='zh'?(o.f[k]||''):((o.tr[lg]||{})[k]||''),out=[`■ ${get('title')||L.head}`];if(o.artist)out.push(`${L.artist}: ${o.artist}`);
+ out.push('',`【${L.head}】`);orderRows(o,lg).forEach(([k,v])=>out.push(`${k}: ${v}`));
+ ['scene','pose','notes'].forEach(k=>{const v=get(k).trim();if(v)out.push('',`【${L[k]}】`,v)});
+ ochars(o).forEach((c,i)=>out.push('','',`======== ${L.char} ${i+1} ========`,cardText(c,cardLang(c,lg))));return out.join('\n')}
+async function orderImage(o,lg){const L=LO[lg],get=k=>lg==='zh'?(o.f[k]||''):((o.tr[lg]||{})[k]||''),cs=ochars(o);
+ const B=[{t:'hero',title:get('title')||L.head,sub:L.head+(o.artist?`   ${L.artist}: ${o.artist}`:''),color:theme()[4],stripe:cs.map(topCol)},{t:'kv',rows:orderRows(o,lg)}];
+ ['scene','pose','notes'].forEach(k=>{const v=get(k).trim();if(v)B.push({t:'label',text:L[k]},{t:'text',text:v})});
+ const sk=o.sk&&sketches.find(s=>s.id===o.sk);if(sk)B.push({t:'label',text:L.sk},{t:'canvas',c:sketchCanvas(sk)});
+ for(const c of cs)B.push(...cardBlocks(c,cardLang(c,lg),await loadImgs(c.photos,4),null,true));
+ return renderBlocks(B)}
+function oTrSheet(){const o=ocur;if(!OKEYS.some(k=>(o.f[k]||'').trim())&&!ochars(o).length){openModal('<h3>先填中文內容</h3><p>請先在「中文」分頁填一些委託內容或加入角色。</p><div class="acts"><button class="btn pri" data-close>好</button></div>');return}
+ openModal(`<h3>AI 翻譯委託單</h3><p class="mute">把「中文」分頁的委託內容翻成以下語言。已有的翻譯會被覆蓋。</p>${langChecks()}
+ <label class="chk" style="margin-top:4px"><input type="checkbox" id="trCards" checked>也翻譯還沒有這些語言的角色卡</label>
+ <p id="trStat" class="mute" aria-live="polite"></p><div class="acts"><button class="btn" data-close>取消</button><button class="btn pri" id="trGo">開始翻譯</button></div>`);
+ $('#trGo').onclick=async()=>{const langs=[...sheet.querySelectorAll('[name=lg]:checked')].map(i=>i.value),st=$('#trStat'),go=$('#trGo'),withCards=$('#trCards').checked;if(!langs.length){st.textContent='請至少選一種語言';return}
+  go.disabled=true;const prog=what=>({text})=>{st.textContent=`${what}…（已收到 ${text.length} 字）`};
+  try{st.textContent='翻譯委託內容…';const src={};OKEYS.forEach(k=>src[k]=o.f[k]||'');const obj=await aiTranslate('art commission request',src,langs,prog('翻譯委託內容'));
+   langs.forEach(l=>{const r=obj[l];if(!r)return;const t={};OKEYS.forEach(k=>t[k]=typeof r[k]==='string'?r[k]:'');o.tr[l]=t});otouch();
+   if(withCards)for(const c of ochars(o)){const miss=langs.filter(l=>!c.tr[l]);if(!miss.length||!(c.f.name||KEYS.some(k=>c.f[k])))continue;await translateCard(c,miss,prog(`翻譯角色「${c.f.name||'未命名'}」`))}
+   closeModal();if(ocur===o){olang=langs[0];renderOEdit()}}
+  catch(err){go.disabled=false;st.textContent=trErr(err)}}}
+function sketchFromOrder(o){const cs=ochars(o);const s=blankSketch((o.f.title||'委託')+' 示意圖');sketches.push(s);loadSketch(s);
+ cs.forEach((c,i)=>{const f=newFig({name:(c.f.name||'').split(/[（(]/)[0].trim(),cm:+c.cm>=40&&+c.cm<=220?+c.cm:160,color:c.pal[0]?hexOk(c.pal[0].hex):undefined,x:D.W*(i+1)/(cs.length+1)});sk.layers.splice(sk.layers.length-1,0,f)});
+ if(cs.length>1&&cs.length<=3){const fs=sk.layers.filter(l=>l.type==='fig');const gap=Math.max(...fs.map(f=>f.cm))*D.PX*.32;fs.forEach((f,i)=>{f.x=D.W/2+(i-(fs.length-1)/2)*gap})}
+ frameTo(o.frame,true);hist=[];o.sk=s.id;otouch();put('sketches',s);show('sketch')}
+
+/* ---------- theme ---------- */
+const THEMES=[['berry','草莓牛奶',['#fff7f9','#ffe3ec','#e94f84','#4f2335'],'#e94f84','#c93a6c'],['mint','薄荷汽水',['#f3fcf9','#d6f4ea','#3cc9a3','#1b453d'],'#3cc9a3','#1f9a79'],['lavender','薰衣草',['#f8f5ff','#e9e1ff','#8a69ee','#36295e'],'#8a69ee','#7454e0'],['milktea','奶茶',['#fcf7f1','#f2e4d4','#a87249','#4a3324'],'#a87249','#94603a'],['sky','晴天',['#f4faff','#d9eefc','#5ab4ee','#183b57'],'#5ab4ee','#2b8fd0']];
+const theme=()=>THEMES.find(t=>t[0]===document.documentElement.dataset.color)||THEMES[0];
+$('#themeBtn').onclick=()=>{const now=theme()[0];openModal(`<h3>選擇主題色</h3><p class="mute">整個網頁都會換成這個顏色，下次打開也會記得。</p><div class="themes">${THEMES.map(([id,n,cs])=>`<button class="th${now===id?' on':''}" data-th="${id}"><span class="pv">${cs.map(c=>`<i style="background:${c}"></i>`).join('')}</span><b>${n}</b></button>`).join('')}</div><div class="acts"><button class="btn pri" data-close>完成</button></div>`);
+ sheet.querySelectorAll('[data-th]').forEach(b=>b.onclick=()=>{document.documentElement.dataset.color=b.dataset.th;try{localStorage.setItem('commish-color',b.dataset.th)}catch(e){}sheet.querySelectorAll('.th').forEach(x=>x.classList.toggle('on',x===b));if(sk)draw()})};
+
+/* ---------- sketch ---------- */
+const SIZES=[['直式 3:4',900,1200],['正方形 1:1',1080,1080],['IG 直式 4:5',1080,1350],['手機桌布 9:16',1080,1920],['橫式 16:9',1920,1080],['A4 直式',1240,1754],['A4 橫式',1754,1240]];
+function dims(s){const W=s&&s.w||900,H=s&&s.h||1200,c=s&&s.cam||{},z=c.z>0?c.z:1;return{W,H,GY:typeof c.gy==='number'?c.gy:Math.round(H*.933),PX:H*.8/200*z,u:H/1200,z}}
+let D=dims(null);
+const P={torso:.31,neck:.035,head:.068,ua:.16,la:.15,th:.245,sh:.235,sw:.088,hw:.052};
+const POSES={'站立':{t:0,h:0,la:[-.12,-.05],ra:[.12,.05],ll:[-.05,0],rl:[.05,0]},
+ '揮手':{t:0,h:.1,la:[-.12,-.05],ra:[2.5,.5],ll:[-.05,0],rl:[.05,0]},
+ '雙手舉高':{t:0,h:0,la:[-2.7,-.2],ra:[2.7,.2],ll:[-.12,0],rl:[.12,0]},
+ '叉腰':{t:0,h:0,la:[-.9,2],ra:[.9,-2],ll:[-.1,0],rl:[.1,0]},
+ '抱胸':{t:0,h:0,la:[-.25,2.3],ra:[.25,-2.3],ll:[-.06,0],rl:[.06,0]},
+ '指向':{t:0,h:.15,la:[-.12,-.05],ra:[1.57,0],ll:[-.05,0],rl:[.05,0]},
+ '跑步':{t:.2,h:-.1,la:[-.7,1.2],ra:[.6,1.4],ll:[-.5,-1],rl:[.9,-1.2]},
+ '坐下':{t:0,h:0,la:[.3,1],ra:[.35,1],ll:[1.5,-1.5],rl:[1.45,-1.45]},
+ '鞠躬':{t:.9,h:.2,la:[.9,0],ra:[.95,0],ll:[.9,0],rl:[.9,0]},
+ '跳躍':{t:0,h:0,la:[-2.4,-.4],ra:[2.4,.4],ll:[-.7,1],rl:[.7,-1]}};
+const FIGCOL=['#ff8fb3','#7cc6f5','#5fd9b6','#ffc861','#b49cff','#ff9e7a','#a8adb8','#f1c6b0'];
+const clonePose=p=>JSON.parse(JSON.stringify(p));
+const SV=(d,extra='')=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${extra}>${d}</svg>`;
+const ICON={fig:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="3.2"/><path d="M7.5 9.5h9l-1.3 6.5h-1.6l-.6 5.5h-2l-.6-5.5H8.8z"/></svg>',ink:SV('<path d="M4 20l1-4L16 5l3 3L8 19z"/>')};
+const EYE=SV('<path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/>'),EYE_OFF=SV('<path d="M3 3l18 18M10.6 5.6A10 10 0 0 1 12 5.5C18.4 5.5 22 12 22 12a17 17 0 0 1-3.3 4M6.2 6.9A17 17 0 0 0 2 12s3.6 6.5 10 6.5a9.5 9.5 0 0 0 4.4-1"/>'),UP=SV('<path d="M6 15l6-6 6 6"/>'),DN=SV('<path d="M6 9l6 6 6-6"/>');
+function geo(f,d=D){const s=f.cm*d.PX/.96,t=f.pose.t,pel=[f.x,f.y];
+ const neck=[pel[0]+Math.sin(t)*P.torso*s,pel[1]-Math.cos(t)*P.torso*s];
+ const pr=[Math.cos(t),Math.sin(t)],dn=[-Math.sin(t),Math.cos(t)];
+ const ha=t+f.pose.h,hd=(P.neck+P.head)*s,hc=[neck[0]+Math.sin(ha)*hd,neck[1]-Math.cos(ha)*hd];
+ const off=(b,sg,w,dd)=>[b[0]+sg*pr[0]*w*s+dn[0]*dd*s,b[1]+sg*pr[1]*w*s+dn[1]*dd*s];
+ const shL=off(neck,-1,P.sw,.03),shR=off(neck,1,P.sw,.03),hpL=off(pel,-1,P.hw,0),hpR=off(pel,1,P.hw,0);
+ const limb=(b,a,l1,l2)=>{const u=-t+a[0],e=[b[0]+Math.sin(u)*l1*s,b[1]+Math.cos(u)*l1*s],v=u+a[1];return{u,b,e,h:[e[0]+Math.sin(v)*l2*s,e[1]+Math.cos(v)*l2*s]}};
+ const g={s,pel,neck,hc,ha,shL,shR,hpL,hpR,la:limb(shL,f.pose.la,P.ua,P.la),ra:limb(shR,f.pose.ra,P.ua,P.la),ll:limb(hpL,f.pose.ll,P.th,P.sh),rl:limb(hpR,f.pose.rl,P.th,P.sh)};
+ g.low=Math.max(g.ll.h[1],g.rl.h[1],g.ll.e[1],g.rl.e[1],g.la.h[1],g.ra.h[1],hc[1]+P.head*s,pel[1])+s*.03;return g}
+function handles(f){const g=geo(f);return[['head',g.hc],['neck',g.neck],['pel',g.pel],['la.e',g.la.e],['la.h',g.la.h],['ra.e',g.ra.e],['ra.h',g.ra.h],['ll.e',g.ll.e],['ll.h',g.ll.h],['rl.e',g.rl.e],['rl.h',g.rl.h]]}
+function shade(hex,k){const n=parseInt(hex.slice(1),16),m=v=>Math.round(k<0?v*(1+k):v+(255-v)*k);return`rgb(${m(n>>16)},${m(n>>8&255)},${m(n&255)})`}
+function drawFig(x,f,d){const g=geo(f,d),c=hexOk(f.color),o=shade(c,-.5),bk=shade(c,-.15),aw=g.s*.048,lw=g.s*.062,u=d.u;
+ x.lineCap='round';x.lineJoin='round';
+ const ln=(a,b)=>{x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b[0],b[1]);x.stroke()};
+ const seg=(a,b,w,col)=>{x.strokeStyle=o;x.lineWidth=w+5*u;ln(a,b);x.strokeStyle=col;x.lineWidth=w;ln(a,b)};
+ const limb=(L,w,col)=>{seg(L.b,L.e,w,col);seg(L.e,L.h,w*.9,col)};
+ limb(g.ll,lw,bk);limb(g.rl,lw,c);
+ const nb=[g.neck[0]+Math.sin(g.ha)*P.neck*g.s*.5,g.neck[1]-Math.cos(g.ha)*P.neck*g.s*.5];seg(g.neck,nb,aw*.9,c);
+ x.beginPath();[g.shL,g.shR,g.hpR,g.hpL].forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.closePath();x.strokeStyle=o;x.lineWidth=lw*.7+5*u;x.stroke();x.fillStyle=c;x.fill();x.strokeStyle=c;x.lineWidth=lw*.7;x.stroke();
+ const hr=P.head*g.s;x.beginPath();x.arc(g.hc[0],g.hc[1],hr,0,Math.PI*2);x.fillStyle=c;x.fill();x.strokeStyle=o;x.lineWidth=2.5*u;x.stroke();
+ limb(g.la,aw,bk);limb(g.ra,aw,c);
+ const lab=[f.name,f.cm+'cm'].filter(Boolean).join(' ');x.font=`700 ${Math.round(22*u)}px ${FF}`;x.textAlign='center';x.textBaseline='top';const tw=x.measureText(lab).width,bh=32*u;
+ x.fillStyle='rgba(255,255,255,.88)';rr(x,g.pel[0]-tw/2-10*u,g.low+4*u,tw+20*u,bh,bh/2);x.fill();x.fillStyle='#3a3340';x.fillText(lab,g.pel[0],g.low+9*u);x.textAlign='start'}
+function drawHandles(x,f,k){const pc=theme()[4];handles(f).forEach(([n,p])=>{x.beginPath();x.arc(p[0],p[1],(n==='pel'?13:10)*k,0,Math.PI*2);x.fillStyle=n==='pel'?pc:'#fff';x.fill();x.lineWidth=3*k;x.strokeStyle=n==='pel'?'#fff':pc;x.stroke()})}
+function drawStroke(x,s,from=0){const p=s.p;x.globalCompositeOperation=s.e?'destination-out':'source-over';x.strokeStyle=s.c;x.fillStyle=s.c;x.lineWidth=s.w;x.lineCap='round';x.lineJoin='round';
+ if(p.length===2){x.beginPath();x.arc(p[0],p[1],s.w/2,0,Math.PI*2);x.fill()}else{x.beginPath();const i0=Math.max(0,from-2);x.moveTo(p[i0],p[i0+1]);for(let i=i0+2;i<p.length;i+=2)x.lineTo(p[i],p[i+1]);x.stroke()}x.globalCompositeOperation='source-over'}
+function inkCanvas(l,d){const c=document.createElement('canvas');c.width=d.W;c.height=d.H;const x=c.getContext('2d');l.strokes.forEach(s=>drawStroke(x,s));return c}
+function renderSketch(x,s,inks,o){const d=dims(s),{W,H,GY,PX,u}=d;x.fillStyle='#fff';x.fillRect(0,0,W,H);
+ if(s.grid){x.strokeStyle='#eef0f4';x.lineWidth=1;const st=50*u;for(let i=st;i<Math.max(W,H);i+=st){x.beginPath();x.moveTo(i,0);x.lineTo(i,H);x.moveTo(0,i);x.lineTo(W,i);x.stroke()}}
+ if(s.lines){x.font=`500 ${Math.round(18*u)}px ${FF}`;x.textBaseline='bottom';for(let cm=10;cm<=220;cm+=10){const y=GY-cm*PX,major=cm%50===0;if(y<0)break;x.strokeStyle=major?'#d6d8df':'#eceef2';x.lineWidth=(major?1.5:1)*u;x.setLineDash(major?[]:[6*u,8*u]);x.beginPath();x.moveTo(0,y);x.lineTo(W,y);x.stroke();if(cm%20===0){x.fillStyle='#a0a4ae';x.fillText(cm+'cm',8*u,y-3*u)}}x.setLineDash([])}
+ x.strokeStyle='#c2c5ce';x.lineWidth=2*u;x.beginPath();x.moveTo(0,GY);x.lineTo(W,GY);x.stroke();
+ s.layers.forEach(l=>{if(l.hidden)return;if(l.type==='fig')drawFig(x,l,d);else if(inks[l.id])x.drawImage(inks[l.id],0,0)});
+ const sf=o.sel&&s.layers.find(l=>l.id===o.sel&&l.type==='fig'&&!l.hidden);if(sf)drawHandles(x,sf,o.k||1)}
+function normSketch(s){if(!Array.isArray(s.layers)){const L=(Array.isArray(s.figs)?s.figs:[]).map(f=>({...f,type:'fig'}));L.push({id:uid(),type:'ink',name:'筆跡 1',strokes:Array.isArray(s.strokes)?s.strokes:[]});s.layers=L;delete s.figs;delete s.strokes}
+ s.layers=s.layers.filter(l=>l&&l.id&&(l.type==='fig'||l.type==='ink'));
+ s.layers.forEach(l=>{if(l.type==='ink'){if(!Array.isArray(l.strokes))l.strokes=[];l.name=String(l.name||'筆跡')}else{l.pose=l.pose&&l.pose.la?l.pose:clonePose(POSES['站立']);l.cm=Math.max(40,Math.min(220,+l.cm||160));l.x=+l.x||450;l.y=+l.y||600;l.name=String(l.name||'')}});
+ const cl=v=>Math.max(300,Math.min(2400,Math.round(+v)||0));s.w=cl(s.w||900);s.h=cl(s.h||1200);s.name=String(s.name||'示意圖');if(!s.cam||!(s.cam.z>0)||typeof s.cam.gy!=='number')s.cam={z:1,gy:Math.round(s.h*.933)};return s}
+function sketchCanvas(s){normSketch(s);const d=dims(s),c=document.createElement('canvas');c.width=d.W;c.height=d.H;const m={};s.layers.forEach(l=>{if(l.type==='ink')m[l.id]=inkCanvas(l,d)});renderSketch(c.getContext('2d'),s,m,{});return c}
+
+const cv=$('#cv'),ctx=cv.getContext('2d');
+let sk=null,inks={},tool='pose',sel=null,pen={c:'#3a3340',w:6},hist=[],drag=null;
+const newInk=()=>({id:uid(),type:'ink',name:'筆跡 '+((sk?sk.layers.filter(l=>l.type==='ink').length:0)+1),strokes:[]});
+function blankSketch(name){return{id:uid(),name,w:900,h:1200,cam:{z:1,gy:1120},layers:[{id:uid(),type:'ink',name:'筆跡 1',strokes:[]}],lines:true,grid:false,updated:Date.now()}}
+function newFig(o={}){const cm=+o.cm||160,f={id:uid(),type:'fig',name:o.name||'',cm,color:o.color||FIGCOL[(sk?sk.layers.filter(l=>l.type==='fig').length:0)%FIGCOL.length],x:o.x||D.W/2,y:0,pose:clonePose(POSES[o.pose||'站立'])};f.y=D.GY-geo(f).low;return f}
+function anchor(f,before){f.y+=before-geo(f).low}
+function enterSketch(){if(!sketches.length){const s=blankSketch('示意圖 1');sketches.push(s);put('sketches',s)}if(!sk||!sketches.includes(sk))loadSketch(sketches[0]);else{fillSel();applyDims();renderPanel();renderLayers()}}
+function loadSketch(s){sk=normSketch(s);hist=[];sel=null;$('#optLines').checked=!!s.lines;$('#optGrid').checked=!!s.grid;fillSel();applyDims();renderPanel();renderLayers()}
+function applyDims(){D=dims(sk);if(cv.width!==D.W)cv.width=D.W;if(cv.height!==D.H)cv.height=D.H;$('#cw').style.width=`min(100%, calc(62vh * ${(D.W/D.H).toFixed(4)}))`;
+ const pre=SIZES.find(z=>z[1]===D.W&&z[2]===D.H);$('#szTxt').textContent=`${pre?pre[0]+'　':''}${D.W} × ${D.H} px`;rebuildInks();draw();renderCam()}
+function rebuildInks(){inks={};sk.layers.forEach(l=>{if(l.type==='ink')inks[l.id]=inkCanvas(l,D)})}
+function fillSel(){$('#skSel').innerHTML=sketches.map(s=>`<option value="${esc(s.id)}"${s===sk?' selected':''}>${esc(s.name)}</option>`).join('')}
+function kScale(){const r=cv.getBoundingClientRect();return r.width?D.W/r.width:1}
+function draw(){if(!sk)return;const o={sel:tool==='pose'?sel:null,k:kScale()};if(drag&&drag.type==='pan'){ctx.fillStyle='#f4f1f4';ctx.fillRect(0,0,D.W,D.H);ctx.save();ctx.translate(drag.off[0],drag.off[1]);renderSketch(ctx,sk,inks,o);ctx.restore()}else renderSketch(ctx,sk,inks,o)}
+function saveSk(){const s=sk;s.updated=Date.now();later('s'+s.id,()=>put('sketches',s),500)}
+let lastSnap=0,lastTag='';
+function snap(tag){const now=Date.now();if(tag&&tag===lastTag&&now-lastSnap<900){lastSnap=now;return}lastTag=tag||'';lastSnap=now;
+ hist.push({w:sk.w,h:sk.h,cam:{...sk.cam},layers:sk.layers.map(l=>l.type==='ink'?{...l,strokes:l.strokes.slice()}:JSON.parse(JSON.stringify(l)))});if(hist.length>40)hist.shift()}
+$('#undo').onclick=()=>{const h=hist.pop();if(!h)return;sk.layers=h.layers;lastTag='';if(!sk.layers.some(l=>l.id===sel))sel=null;
+ sk.w=h.w;sk.h=h.h;if(h.cam)sk.cam=h.cam;applyDims();renderPanel();renderLayers();saveSk()};
+const selLayer=()=>sk.layers.find(l=>l.id===sel);
+const fig=()=>{const l=selLayer();return l&&l.type==='fig'?l:null};
+function activeInk(create){let l=sk.layers.find(x=>x.id===sel&&x.type==='ink');if(!l)l=[...sk.layers].reverse().find(x=>x.type==='ink'&&!x.hidden);
+ if(!l&&create){l=newInk();sk.layers.push(l);inks[l.id]=inkCanvas(l,D);renderLayers()}if(l&&l.hidden&&create){l.hidden=false;renderLayers()}return l}
+function setTool(t){tool=t;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('on',x.dataset.tool===t));renderPanel();draw()}
+function renderPanel(){const p=$('#panel');if(!sk)return;
+ if(tool==='pan'){p.innerHTML='<p class="mute" style="margin:0">在畫布上拖曳可以移動整個畫面，小人、筆跡和地面會一起移動。放大縮小用畫布下方的 −／＋，或直接點「大頭貼／胸口／半身／全身」自動取景。</p>';return}
+ if(tool!=='pose'){const cols=['#3a3340','#ffffff','#ff6b8b','#5ab4ee','#3cc9a3','#ffb84d','#9a8cff','#a0a4ae'];const ai=activeInk(false);
+  const where=`<p class="mute" style="margin:10px 0 0">畫在圖層：<b>${ai?esc(ai.name):'（會自動新增）'}</b>　在下方圖層列表點選可以換</p>`;
+  p.innerHTML=(tool==='pen'?`<div class="dots" role="group" aria-label="筆的顏色">${cols.map(c=>`<button class="dot${pen.c===c?' on':''}" data-pc="${c}" style="background:${c}" aria-label="顏色 ${c}"></button>`).join('')}<input type="color" id="penC" value="${pen.c}" aria-label="自訂顏色"></div><label class="fl" style="margin:10px 0 0"><span>粗細 ${pen.w}</span><input type="range" id="penW" min="2" max="40" value="${pen.w}"></label>`
+   :`<label class="fl" style="margin:0"><span>橡皮擦大小 ${pen.w*3}（只擦這個圖層的筆跡）</span><input type="range" id="penW" min="2" max="40" value="${pen.w}"></label>`)+where;return}
+ const l=selLayer();
+ if(!l){p.innerHTML=`<p class="mute" style="margin:0">點一下小人來選取。拖<b>白色圓點</b>調整手腳、頭和身體角度，拖<b>實心圓點</b>或身體可以移動。</p>`;return}
+ if(l.type==='ink'){p.innerHTML=`<label class="fl"><span>圖層名稱</span><input id="iName" value="${esc(l.name)}"></label><div class="row"><button class="btn sm" id="iDraw">在這層畫畫</button><button class="btn sm" id="iClr">清空這層</button><button class="btn sm danger" id="lDel">刪除圖層</button></div>`;return}
+ p.innerHTML=`<div class="two"><label class="fl"><span>名字</span><input id="fName" value="${esc(l.name)}" placeholder="例如：小雨"></label><label class="fl"><span>顏色</span><span class="dots">${FIGCOL.map(c=>`<button class="dot${l.color===c?' on':''}" data-fc="${c}" style="background:${c}" aria-label="顏色 ${c}"></button>`).join('')}<input type="color" id="fCol" value="${hexOk(l.color)}" aria-label="自訂顏色"></span></label></div>
+ <label class="fl"><span>身高 <b id="fCmV">${l.cm}</b> cm</span><input type="range" id="fCm" min="40" max="220" value="${l.cm}"></label>
+ <h3 class="sec">預設動作</h3><div class="chips">${Object.keys(POSES).map(n=>`<button data-pose="${n}">${n}</button>`).join('')}</div>
+ <div class="row"><button class="btn sm" id="fMir">左右翻轉</button><button class="btn sm" id="fDup">複製</button><button class="btn sm danger" id="lDel">刪除小人</button></div>${pairHTML()}`}
+function renderLayers(){if(!sk)return;const n=sk.layers.length;
+ $('#lyr').innerHTML=`<div class="hd"><h3 class="sec" style="margin:0">圖層</h3><span class="mute">越上面越前面，點一下選取</span></div>
+ <ul>${[...sk.layers].reverse().map(l=>{const i=sk.layers.indexOf(l),id=esc(l.id);return`<li data-lid="${id}" class="${l.id===sel?'on':''}${l.hidden?' off':''}"><button class="ib" data-vis="${id}" aria-label="${l.hidden?'顯示圖層':'隱藏圖層'}">${l.hidden?EYE_OFF:EYE}</button><span class="ic" style="background:${l.type==='fig'?hexOk(l.color):'var(--ink)'};color:${l.type==='fig'?'#fff':'var(--bg)'}">${ICON[l.type]}</span><span class="ln">${esc(l.type==='fig'?(l.name||'小人')+'　'+l.cm+'cm':l.name)}</span><button class="ib" data-up="${id}" aria-label="往上移"${i===n-1?' disabled':''}>${UP}</button><button class="ib" data-dn="${id}" aria-label="往下移"${i===0?' disabled':''}>${DN}</button></li>`}).join('')||'<li class="mute">沒有圖層</li>'}</ul>
+ <div class="row"><button class="btn sm" id="addFig">＋ 小人</button><button class="btn sm" id="addInk">＋ 筆跡圖層</button></div>`}
+const panel=$('#panel');
+panel.addEventListener('change',e=>{if(e.target.id==='pairWith')partnerId=e.target.value});
+panel.addEventListener('input',e=>{const t=e.target,l=selLayer();
+ if(t.id==='penW'){pen.w=+t.value;t.previousElementSibling.textContent=tool==='pen'?`粗細 ${pen.w}`:`橡皮擦大小 ${pen.w*3}（只擦這個圖層的筆跡）`;return}
+ if(t.id==='penC'){pen.c=t.value;panel.querySelectorAll('[data-pc]').forEach(d=>d.classList.remove('on'));return}
+ if(!l)return;
+ if(t.id==='iName'){snap('iname');l.name=t.value}
+ else if(t.id==='fName'){snap('name');l.name=t.value}
+ else if(t.id==='fCol'){snap('col');l.color=t.value}
+ else if(t.id==='fCm'){snap('cm');const b=geo(l).low;l.cm=+t.value;anchor(l,b);$('#fCmV').textContent=l.cm}
+ else return;renderLayers();draw();saveSk()});
+panel.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;const l=selLayer(),f=fig();
+ if(t.dataset.pc){pen.c=t.dataset.pc;renderPanel();return}
+ if(t.dataset.pair){applyPair(t.dataset.pair);return}
+ if(!l)return;
+ if(t.id==='iDraw'){setTool('pen');return}
+ if(t.id==='lDel'){snap();sk.layers=sk.layers.filter(x=>x!==l);delete inks[l.id];sel=null;renderPanel()}
+ else if(t.id==='iClr'&&l.type==='ink'){if(!l.strokes.length)return;snap();l.strokes=[];inks[l.id]=inkCanvas(l,D)}
+ else if(!f)return;
+ else if(t.dataset.fc){snap();f.color=t.dataset.fc;renderPanel()}
+ else if(t.dataset.pose){snap();const b=geo(f).low;f.pose=clonePose(POSES[t.dataset.pose]);anchor(f,b)}
+ else if(t.id==='fMir'){snap();const p=f.pose,b=geo(f).low,n=a=>[-a[0],-a[1]];f.pose={t:-p.t,h:-p.h,la:n(p.ra),ra:n(p.la),ll:n(p.rl),rl:n(p.ll)};anchor(f,b)}
+ else if(t.id==='fDup'){snap();const d=JSON.parse(JSON.stringify(f));d.id=uid();d.x=Math.min(D.W-60,f.x+D.W*.13);sk.layers.splice(sk.layers.indexOf(f)+1,0,d);sel=d.id;renderPanel()}
+ else return;renderLayers();draw();saveSk()});
+$('#lyr').addEventListener('click',e=>{const b=e.target.closest('button'),li=e.target.closest('[data-lid]');
+ if(b&&b.id==='addFig'){addFigSheet();return}
+ if(b&&b.id==='addInk'){snap();const l=newInk(),i=sk.layers.findIndex(x=>x.id===sel);sk.layers.splice(i<0?sk.layers.length:i+1,0,l);inks[l.id]=inkCanvas(l,D);sel=l.id;renderLayers();setTool('pen');saveSk();return}
+ if(b&&(b.dataset.vis||b.dataset.up||b.dataset.dn)){const id=b.dataset.vis||b.dataset.up||b.dataset.dn,i=sk.layers.findIndex(l=>l.id===id);if(i<0)return;snap();
+  if(b.dataset.vis)sk.layers[i].hidden=!sk.layers[i].hidden;else{const j=b.dataset.up?i+1:i-1;if(j<0||j>=sk.layers.length)return;[sk.layers[i],sk.layers[j]]=[sk.layers[j],sk.layers[i]]}
+  renderLayers();draw();saveSk();return}
+ if(li&&li.dataset.lid){sel=li.dataset.lid;const l=selLayer();if(l&&l.type==='fig'&&tool!=='pose')tool='pose';setTool(tool);renderLayers()}});
+document.querySelector('.tools').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(b)setTool(b.dataset.tool)});
+function pt(e){const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*D.W/r.width,(e.clientY-r.top)*D.H/r.height]}
+function dSeg(p,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy||1,t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/l));return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy)}
+function hitFig(f,p,pad){const g=geo(f),w=g.s*.06/2+pad;if(Math.hypot(p[0]-g.hc[0],p[1]-g.hc[1])<P.head*g.s+pad)return true;
+ const segs=[[g.neck,g.pel],[g.shL,g.shR],[g.hpL,g.hpR],[g.shL,g.hpL],[g.shR,g.hpR]];['la','ra','ll','rl'].forEach(k=>{segs.push([g[k].b,g[k].e],[g[k].e,g[k].h])});return segs.some(([a,b])=>dSeg(p,a,b)<w)}
+function dragJoint(f,key,p){const g=geo(f),t=f.pose.t;
+ if(key==='head'){f.pose.h=Math.atan2(p[0]-g.neck[0],-(p[1]-g.neck[1]))-t;return}
+ if(key==='neck'){f.pose.t=Math.atan2(p[0]-g.pel[0],-(p[1]-g.pel[1]));return}
+ const[lm,j]=key.split('.'),L=g[lm];
+ if(j==='e')f.pose[lm][0]=Math.atan2(p[0]-L.b[0],p[1]-L.b[1])+t;else f.pose[lm][1]=Math.atan2(p[0]-L.e[0],p[1]-L.e[1])-L.u}
+cv.addEventListener('pointerdown',e=>{if(drag||!sk)return;e.preventDefault();const p=pt(e),k=kScale();try{cv.setPointerCapture(e.pointerId)}catch(_){}
+ if(tool==='pan'){drag={type:'pan',start:p,off:[0,0],id:e.pointerId};return}
+ if(tool==='pose'){const f=fig();
+  if(f&&!f.hidden){const hd=handles(f).find(([,q])=>Math.hypot(q[0]-p[0],q[1]-p[1])<26*k);if(hd){drag={type:hd[0]==='pel'?'move':'joint',f,key:hd[0],last:p,id:e.pointerId,snapped:false};return}}
+  const hit=[...sk.layers].reverse().find(l=>l.type==='fig'&&!l.hidden&&hitFig(l,p,6*k));
+  if(hit){if(sel!==hit.id){sel=hit.id;renderPanel();renderLayers()}drag={type:'move',f:hit,last:p,id:e.pointerId,snapped:false};draw();return}
+  if(sel){sel=null;renderPanel();renderLayers();draw()}return}
+ snap();const l=activeInk(true),s={c:pen.c,w:tool==='erase'?pen.w*3:pen.w,e:tool==='erase',p:[Math.round(p[0]),Math.round(p[1])]};l.strokes.push(s);drag={type:'stroke',s,l,id:e.pointerId};drawStroke(inks[l.id].getContext('2d'),s);draw()});
+cv.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;e.preventDefault();const p=pt(e);
+ if(drag.type==='pan'){drag.off=[p[0]-drag.start[0],p[1]-drag.start[1]];draw();return}
+ if(drag.type==='stroke'){const s=drag.s,n=s.p.length;if(Math.hypot(p[0]-s.p[n-2],p[1]-s.p[n-1])<2)return;s.p.push(Math.round(p[0]),Math.round(p[1]));drawStroke(inks[drag.l.id].getContext('2d'),s,n);draw();return}
+ if(!drag.snapped){snap();drag.snapped=true}
+ if(drag.type==='move'){drag.f.x+=p[0]-drag.last[0];drag.f.y+=p[1]-drag.last[1];drag.last=p}else dragJoint(drag.f,drag.key,p);draw()});
+const end=e=>{if(!drag||e.pointerId!==drag.id)return;if(drag.type==='pan'){const o=drag.off;drag=null;if(Math.hypot(o[0],o[1])>1){snap();camXform(1,o,[0,0])}else draw();return}const changed=drag.type==='stroke'||drag.snapped;drag=null;if(changed)saveSk()};
+cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+const ro=new ResizeObserver(()=>draw());ro.observe(cv);
+$('#optLines').onchange=e=>{sk.lines=e.target.checked;draw();saveSk()};
+$('#optGrid').onchange=e=>{sk.grid=e.target.checked;draw();saveSk()};
+function addFigSheet(){const withCards=cards.filter(c=>c.f.name);
+ openModal(`<h3>加入小人</h3><p class="mute">從角色卡加入會自動帶入名字、身高和第一個色票顏色。</p><div class="chips"><button data-af="">空白小人</button>${withCards.map(c=>`<button data-af="${esc(c.id)}">${esc(c.f.name)}${c.cm?` <small>${esc(c.cm)}cm</small>`:''}</button>`).join('')}</div><div class="acts"><button class="btn" data-close>取消</button></div>`);
+ sheet.querySelectorAll('[data-af]').forEach(b=>b.onclick=()=>{const c=cards.find(x=>x.id===b.dataset.af);snap();const n=sk.layers.filter(l=>l.type==='fig').length;
+  const f=newFig({name:c?c.f.name.split(/[（(]/)[0].trim():'',cm:c&&+c.cm>=40&&+c.cm<=220?+c.cm:160,color:c&&c.pal[0]?hexOk(c.pal[0].hex):undefined,x:D.W*[.5,.28,.72,.16,.84][n%5]});
+  sk.layers.push(f);sel=f.id;closeModal();setTool('pose');renderLayers();saveSk()})}
+$('#skSel').onchange=e=>{const s=sketches.find(x=>x.id===e.target.value);if(s)loadSketch(s)};
+$('#skNew').onclick=()=>prompt2('新示意圖名稱',`示意圖 ${sketches.length+1}`,n=>{const s=blankSketch(n);if(sk){s.w=sk.w;s.h=sk.h}sketches.push(s);put('sketches',s);loadSketch(s)});
+$('#skRen').onclick=()=>prompt2('重新命名',sk.name,n=>{sk.name=n;fillSel();saveSk()});
+$('#skDel').onclick=()=>ask(`刪除「${sk.name}」？`,'刪除',()=>{del('sketches',sk.id);sketches=sketches.filter(s=>s!==sk);cards.forEach(c=>{if(c.sk===sk.id){c.sk='';put('cards',c)}});sk=null;enterSketch()});
+$('#skSize').onclick=()=>{openModal(`<h3>畫布尺寸</h3><p class="mute">換尺寸時，小人和筆跡會等比例縮放並置中，不會變形；變窄時兩側可能超出畫面，拖回來就好。</p>
+ <div class="chips">${SIZES.map(([n,a,b])=>`<button data-sz="${a}x${b}" class="${a===sk.w&&b===sk.h?'on':''}">${n} <small>${a}×${b}</small></button>`).join('')}</div>
+ <h3 class="sec" style="margin-top:14px">自訂（像素，300–2400）</h3><div class="two"><label class="fl"><span>寬</span><input type="number" id="szW" value="${sk.w}" inputmode="numeric" min="300" max="2400"></label><label class="fl"><span>高</span><input type="number" id="szH" value="${sk.h}" inputmode="numeric" min="300" max="2400"></label></div>
+ <div class="acts"><button class="btn" data-close>取消</button><button class="btn pri" id="szOk">套用</button></div>`);
+ sheet.querySelectorAll('[data-sz]').forEach(b=>b.onclick=()=>{const[a,c]=b.dataset.sz.split('x');$('#szW').value=a;$('#szH').value=c;sheet.querySelectorAll('[data-sz]').forEach(x=>x.classList.toggle('on',x===b))});
+ $('#szOk').onclick=()=>{const cl=v=>Math.max(300,Math.min(2400,Math.round(+v)||0));const nw=cl($('#szW').value),nh=cl($('#szH').value);closeModal();if(nw!==sk.w||nh!==sk.h)resizeSketch(nw,nh)}};
+function resizeSketch(nw,nh){snap();const k=nh/sk.h,dx=(nw-sk.w*k)/2;
+ sk.layers.forEach(l=>{if(l.type==='fig'){l.x=l.x*k+dx;l.y=l.y*k}else l.strokes=l.strokes.map(s=>({...s,w:Math.max(1,s.w*k),p:s.p.map((v,i)=>Math.round(i%2?v*k:v*k+dx))}))});
+ sk.cam.gy=sk.cam.gy*k;sk.w=nw;sk.h=nh;applyDims();renderPanel();saveSk()}
+$('#skExport').onclick=()=>{const c=document.createElement('canvas');c.width=D.W;c.height=D.H;renderSketch(c.getContext('2d'),sk,inks,{});c.toBlob(b=>showOut({blob:b,filename:fname(sk.name)+'.png'}),'image/png')};
+
+/* camera: zoom, framing, pan */
+const FRAMES={head:.25,bust:.40,half:.60,full:0};
+function camXform(k,a,b){const z1=sk.cam.z,z2=Math.max(.15,Math.min(8,z1*k));k=z2/z1;
+ const mx=v=>Math.round((a[0]+(v-b[0])*k)*10)/10,my=v=>Math.round((a[1]+(v-b[1])*k)*10)/10;
+ sk.layers.forEach(l=>{if(l.type==='fig'){l.x=mx(l.x);l.y=my(l.y)}else l.strokes=l.strokes.map(s=>({...s,w:Math.max(.5,s.w*k),p:s.p.map((v,i)=>i%2?my(v):mx(v))}))});
+ sk.cam={z:z2,gy:my(D.GY)};applyDims();saveSk()}
+function zoomBy(k){if(!sk)return;snap('zoom');camXform(k,[D.W/2,D.H/2],[D.W/2,D.H/2])}
+function frameTo(key,quiet){const figs=sk.layers.filter(l=>l.type==='fig'&&!l.hidden);if(!figs.length){if(!quiet)openModal('<h3>先加入小人</h3><p>取景會依照畫面上的小人來放大縮小，請先按「＋ 小人」。</p><div class="acts"><button class="btn pri" data-close>好</button></div>');return}
+ if(!quiet)snap();const gs=figs.map(f=>geo(f)),top=Math.min(...gs.map(g=>g.hc[1]-P.head*g.s)),hMax=Math.max(...figs.map(f=>f.cm*D.PX));
+ const xs=key==='head'||key==='bust'?gs.flatMap(g=>[g.hc[0]-P.head*g.s*1.6,g.hc[0]+P.head*g.s*1.6,g.shL[0]-g.s*.05,g.shR[0]+g.s*.05]):gs.flatMap(g=>[g.la.h[0],g.ra.h[0],g.la.e[0],g.ra.e[0],g.ll.h[0],g.rl.h[0],g.shL[0]-g.s*.05,g.shR[0]+g.s*.05,g.hc[0]-P.head*g.s,g.hc[0]+P.head*g.s]);
+ const minX=Math.min(...xs),maxX=Math.max(...xs);
+ const span=key==='full'?Math.max(...gs.map(g=>g.low))+44*D.u-top:hMax*FRAMES[key];
+ let k=D.H*(key==='full'?.88:.93)/span;k=Math.min(k,D.W*.9/Math.max(1,maxX-minX));
+ camXform(k,[D.W/2,D.H*(key==='full'?.05:.07)],[(minX+maxX)/2,top])}
+function renderCam(){$('#frameChips').innerHTML=Object.keys(FRAMES).map(k=>`<button data-frame="${k}">${FR.zh[k]}</button>`).join('');$('#zVal').textContent=Math.round((sk?sk.cam.z:1)*100)+'%'}
+$('#frameChips').addEventListener('click',e=>{const b=e.target.closest('[data-frame]');if(b&&sk)frameTo(b.dataset.frame)});
+$('#zIn').onclick=()=>zoomBy(1.2);$('#zOut').onclick=()=>zoomBy(1/1.2);
+
+/* two-person interactions */
+function reach(f,lm,T,mode){const g=geo(f),L=g[lm],b=L.b,arm=lm[1]==='a',l1=(arm?P.ua:P.th)*g.s,l2=(arm?P.la:P.sh)*g.s;
+ const dx=T[0]-b[0],dy=T[1]-b[1],d=Math.max(Math.abs(l1-l2)+1,Math.min(l1+l2-1,Math.hypot(dx,dy))),th=Math.atan2(dx,dy),al=Math.acos(Math.max(-1,Math.min(1,(l1*l1+d*d-l2*l2)/(2*l1*d))));
+ const cs=[th+al,th-al].map(u=>({u,e:[b[0]+Math.sin(u)*l1,b[1]+Math.cos(u)*l1]}));
+ const score=c=>mode==='out'?Math.abs(c.e[0]-f.x):c.e[1];const c=score(cs[0])>score(cs[1])?cs[0]:cs[1];
+ const v=Math.atan2(T[0]-c.e[0],T[1]-c.e[1]);f.pose[lm]=[c.u+f.pose.t,v-c.u]}
+const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];
+const PAIRS={
+ '牽手':{gap:.30,ik:(A,B,n,gA,gB)=>{const m=mid(gA.shR,gB.shL);m[1]+=n*.30;reach(A,'ra',m,'low');reach(B,'la',m,'low')}},
+ '擊掌':{gap:.34,pa:{h:.1},pb:{h:-.1},ik:(A,B,n,gA,gB)=>{const m=[(gA.shR[0]+gB.shL[0])/2,Math.min(gA.neck[1],gB.neck[1])-n*.17];reach(A,'ra',m,'low');reach(B,'la',m,'low')}},
+ '比愛心':{gap:.26,pa:{h:.3},pb:{h:-.3},ik:(A,B,n,gA,gB)=>{const m=[(gA.hc[0]+gB.hc[0])/2,Math.min(gA.hc[1],gB.hc[1])-n*.1];reach(A,'ra',m,'out');reach(B,'la',m,'out')}},
+ '擁抱':{gap:.17,pa:{t:.1,h:.3},pb:{t:-.1,h:-.3},ik:(A,B,n,gA,gB)=>{reach(A,'ra',[gB.shR[0]-n*.01,gB.shR[1]+n*.07],'low');reach(B,'la',[gA.shL[0]+n*.01,gA.shL[1]+n*.12],'low')}},
+ '搭肩':{gap:.24,b:'叉腰',pa:{h:.12},ik:(A,B,n,gA,gB)=>{reach(A,'ra',[gB.shR[0]-n*.02,gB.shR[1]-n*.015],'low');reach(B,'la',[gA.pel[0]+n*.03,gA.pel[1]-n*.03],'low')}},
+ '遞東西':{gap:.36,pa:{h:.12},pb:{h:-.12},ik:(A,B,n,gA,gB)=>{const m=[(gA.shR[0]+gB.shL[0])/2,(gA.neck[1]+gB.neck[1])/2+n*.2];reach(A,'ra',m,'low');reach(B,'la',[m[0]+n*.03,m[1]],'low')}},
+ '面對面':{gap:.30,pa:{t:.05,h:.28},pb:{t:-.05,h:-.28}},
+ '背靠背':{gap:.13,a:'抱胸',b:'抱胸',pa:{h:-.25},pb:{h:.25}}};
+let partnerId=null;
+function pairFigs(){const f=fig();if(!f)return null;const others=sk.layers.filter(l=>l.type==='fig'&&l!==f&&!l.hidden);if(!others.length)return null;
+ let p=others.find(l=>l.id===partnerId);if(!p)p=others.reduce((a,b)=>Math.abs(b.x-f.x)<Math.abs(a.x-f.x)?b:a);partnerId=p.id;return{f,p,others}}
+function applyPair(name){const pr=pairFigs();if(!pr)return;snap();const cfg=PAIRS[name];let[A,B]=pr.f.x<=pr.p.x?[pr.f,pr.p]:[pr.p,pr.f];
+ const hm=(A.cm+B.cm)/2*D.PX,hn=Math.min(A.cm,B.cm)*D.PX,cx=(A.x+B.x)/2;
+ A.pose=Object.assign(clonePose(POSES[cfg.a||'站立']),cfg.pa||{});B.pose=Object.assign(clonePose(POSES[cfg.b||'站立']),cfg.pb||{});
+ A.x=cx-cfg.gap*hm/2;B.x=cx+cfg.gap*hm/2;[A,B].forEach(f=>{f.y+=D.GY-geo(f).low});
+ if(cfg.ik)cfg.ik(A,B,hn,geo(A),geo(B));
+ if(name==='擁抱'||name==='搭肩'){const iA=sk.layers.indexOf(A),iB=sk.layers.indexOf(B);if(iB<iA){sk.layers[iA]=B;sk.layers[iB]=A}}
+ renderLayers();draw();saveSk()}
+const pairHTML=()=>{const pr=pairFigs();if(!pr)return'';return`<div class="pairs"><h3 class="sec">雙人互動</h3><label class="fl" style="margin-bottom:8px"><span>和誰一起</span><select id="pairWith">${pr.others.map(o=>`<option value="${esc(o.id)}"${o===pr.p?' selected':''}>${esc(o.name||'小人')}　${o.cm}cm</option>`).join('')}</select></label><div class="chips">${Object.keys(PAIRS).map(n=>`<button data-pair="${n}">${n}</button>`).join('')}</div><p class="mute" style="margin:4px 0 0">會依兩人身高自動調整手的位置，套用後還可以再拖圓點微調。</p></div>`};
+
+/* ---------- languages ---------- */
+const BUILTIN={ja:'日本語',ko:'한국어',en:'English'};
+const BASE={LB:{...LB.en},LO:{...LO.en},FR:{...FR.en},BGS:{...BGS.en},USES:{...USES.en}};
+let langList=Object.entries(BUILTIN).map(([code,name])=>({code,name}));
+const isCustom=c=>!BUILTIN[c];
+const LABEL_GROUPS=[['c',LB,'LB'],['o',LO,'LO'],['fr',FR,'FR'],['bg',BGS,'BGS'],['use',USES,'USES']];
+function applyLangs(){Object.keys(LANGS).forEach(k=>{if(k!=='zh')delete LANGS[k]});
+ langList.forEach(l=>{LANGS[l.code]=l.name;if(isCustom(l.code)){const lb=l.labels||{};LABEL_GROUPS.forEach(([p,obj,b])=>{const o={...BASE[b]};Object.keys(obj.zh).forEach(k=>{if(lb[p+'.'+k])o[k]=lb[p+'.'+k]});obj[l.code]=o})}})}
+function saveLangs(){put('meta',{id:'langs',list:langList})}
+const otherLangs=()=>Object.keys(LANGS).filter(k=>k!=='zh');
+let aiOK=false;use('sample').then(s=>{aiOK=!!s});
+
+/* translation file: export, paste into any AI, import back */
+function trFileText(lg,cs,os){const name=LANGS[lg],L=[
+ `# 委圖小幫手 翻譯檔｜目標語言：${name}`,
+ `# 給 AI 的說明（請照做）：`,
+ `# 1. 把每個 [[...]] 標記下面的繁體中文，翻譯成「${name}」。這是要委託繪師畫圖用的資料，請用自然、有禮貌的語氣。`,
+ `# 2. 所有 [[...]] 標記行都要原封不動保留在原本的位置，不要翻譯、刪除或新增標記。`,
+ `# 3. 角色名字保留原文，並在後面括號加上「${name}」的讀音或拼法。數字、尺寸、日期、金額、{n} 保持不變。`,
+ `# 4. 只輸出翻譯後的完整內容（從 [[lang:${lg}]] 開始），不要加任何說明。`,
+ `# Instructions for the AI: translate the Traditional Chinese text under each [[...]] marker into ${name}. It is a brief for commissioning an illustrator, so keep the tone polite and natural. Keep every [[...]] marker line exactly as it is, in place. Keep character names in the original and add the reading in brackets. Keep numbers, sizes, dates, prices and {n}. Output only the full translated content starting from [[lang:${lg}]].`,
+ '',`[[lang:${lg}]]`];
+ const field=(k,v)=>{v=String(v||'').trim();if(v)L.push(`[[${k}]]`,v)};
+ if(isCustom(lg)){L.push('','[[labels]]');LABEL_GROUPS.forEach(([p,obj])=>Object.entries(obj.zh).forEach(([k,v])=>L.push(`[[label:${p}.${k}]]`,v)))}
+ os.forEach(o=>{L.push('',`[[order:${o.id}]]`);OKEYS.forEach(k=>field(k,o.f[k]))});
+ cs.forEach(c=>{L.push('',`[[card:${c.id}]]`);KEYS.forEach(k=>field(k,c.f[k]));c.pal.forEach((p,i)=>field('pal:'+i,p.label))});
+ return L.join('\n')}
+function parseTr(text){const res={lang:null,labels:{},cards:{},orders:{}};let ent=null,key=null,buf=[],started=false;
+ const flush=()=>{if(ent&&key!==null)ent[key]=buf.join('\n').trim();buf=[];key=null};
+ for(const raw of String(text).replace(/\r/g,'').split('\n')){const line=raw.trim();
+  if(line.startsWith('```'))continue;if(!started&&(line.startsWith('#')||!line))continue;
+  const m=line.match(/^\[\[\s*([a-zA-Z]+)\s*(?::\s*([^\]]+?))?\s*\]\]$/);
+  if(m){started=true;flush();const t=m[1].toLowerCase(),arg=(m[2]||'').trim();
+   if(t==='lang'){res.lang=arg;ent=null}else if(t==='labels')ent=res.labels;else if(t==='label'){ent=res.labels;key=arg}
+   else if(t==='card')ent=res.cards[arg]=res.cards[arg]||{};else if(t==='order')ent=res.orders[arg]=res.orders[arg]||{};
+   else if(t==='pal')key='pal:'+arg;else key=t;continue}
+  if(key!==null)buf.push(raw)}
+ flush();return res}
+function applyTr(res,lg){let nc=0,no=0;
+ Object.entries(res.cards).forEach(([id,f])=>{const c=cards.find(x=>x.id===id);if(!c)return;const t=c.tr[lg]||(c.tr[lg]={});KEYS.forEach(k=>{if(typeof f[k]==='string')t[k]=f[k]});
+  const pal=Array.isArray(t.pal)?t.pal:[];Object.keys(f).filter(k=>k.startsWith('pal:')).forEach(k=>{const i=+k.slice(4);if(i>=0&&i<c.pal.length)pal[i]=f[k]});for(let i=0;i<c.pal.length;i++)pal[i]=pal[i]||'';t.pal=pal;c.updated=Date.now();put('cards',c);nc++});
+ Object.entries(res.orders).forEach(([id,f])=>{const o=orders.find(x=>x.id===id);if(!o)return;const t=o.tr[lg]||(o.tr[lg]={});OKEYS.forEach(k=>{if(typeof f[k]==='string')t[k]=f[k]});o.updated=Date.now();put('orders',o);no++});
+ const def=langList.find(l=>l.code===lg);if(def&&isCustom(lg)&&Object.keys(res.labels).length){def.labels={...(def.labels||{}),...res.labels};saveLangs();applyLangs()}
+ return{nc,no}}
+function trHub(cs,os,after){const ai=aiOK?`<button class="btn" id="hubAI" style="width:100%;margin-bottom:14px">用 Claude 自動翻譯</button>`:'';let lg=otherLangs()[0];
+ const draw=()=>{openModal(`<h3>翻譯</h3>${ai}
+ <h3 class="sec">① 匯出翻譯檔</h3><p class="mute" style="margin-top:0">選要翻成的語言，複製或下載後貼給 ChatGPT、Gemini 等任何 AI，請它照格式翻譯。</p>
+ <div class="chips">${otherLangs().map(l=>`<button data-tl="${l}" class="${l===lg?'on':''}">${esc(LANGS[l])}</button>`).join('')}</div>
+ <button class="btn pri" id="hubEx" style="width:100%"${lg?'':' disabled'}>產生${lg?esc(LANGS[lg]):''}翻譯檔</button>
+ <h3 class="sec" style="margin-top:18px">② 匯入 AI 翻好的內容</h3>
+ <button class="btn" id="hubIm" style="width:100%">貼上或選擇檔案</button>
+ <p class="mute">想翻成其他語言？到「設定」新增語言。</p>`);
+ sheet.querySelectorAll('[data-tl]').forEach(b=>b.onclick=()=>{lg=b.dataset.tl;draw()});
+ if(aiOK)$('#hubAI').onclick=()=>{closeModal();os.length?oTrSheet():trSheet()};
+ $('#hubEx').onclick=()=>{const t=trFileText(lg,cs,os);showOut({blob:new Blob([t],{type:'text/plain;charset=utf-8'}),filename:`翻譯檔_${fname(os[0]?os[0].f.title:cs[0]?cs[0].f.name:'all')}_${lg}.txt`,text:t,note:'按「複製文字」貼給任何 AI，請它翻譯。翻好後回到「翻譯 → ② 匯入」貼回來。'})};
+ $('#hubIm').onclick=()=>importSheet(lg,after)};draw()}
+function importSheet(lg,after){openModal(`<h3>匯入翻譯</h3><p class="mute">把 AI 翻好的整段內容貼在下面（要包含 [[...]] 標記），或選擇 AI 給你的文字檔。</p>
+ <textarea id="imTxt" rows="8" placeholder="[[lang:ja]]&#10;[[card:…]]&#10;[[name]]&#10;…"></textarea>
+ <div class="acts"><button class="btn" id="imFile">選擇檔案</button><button class="btn pri" id="imGo">檢查內容</button></div><p class="mute" id="imStat" aria-live="polite"></p>`);
+ const fi=document.createElement('input');fi.type='file';fi.accept='.txt,text/plain';fi.onchange=async()=>{const f=fi.files[0];if(f){$('#imTxt').value=await f.text();check()}};
+ $('#imFile').onclick=()=>fi.click();$('#imGo').onclick=check;
+ function check(){const res=parseTr($('#imTxt').value),cs=Object.keys(res.cards).filter(id=>cards.some(c=>c.id===id)),os=Object.keys(res.orders).filter(id=>orders.some(o=>o.id===id)),miss=Object.keys(res.cards).length-cs.length+Object.keys(res.orders).length-os.length;
+  if(!cs.length&&!os.length){$('#imStat').textContent=miss?'找不到對應的角色卡或委託單（可能已經刪除，或是在別台裝置匯出的）。':'讀不到翻譯內容，請確認有貼上包含 [[card:…]] 或 [[order:…]] 標記的完整內容。';return}
+  let tl=LANGS[res.lang]&&res.lang!=='zh'?res.lang:(lg||otherLangs()[0]);
+  const draw2=()=>{openModal(`<h3>確認匯入</h3><p>找到 <b>${cs.length}</b> 張角色卡${os.length?`、<b>${os.length}</b> 張委託單`:''}的翻譯${miss?`（另有 ${miss} 筆找不到對應資料，會略過）`:''}${Object.keys(res.labels).length?'，以及欄位名稱的翻譯':''}。</p>
+   <p class="mute">要填入哪個語言分頁？原本的內容會被覆蓋。</p><div class="chips">${otherLangs().map(l=>`<button data-il="${l}" class="${l===tl?'on':''}">${esc(LANGS[l])}</button>`).join('')}</div>
+   <div class="acts"><button class="btn" data-close>取消</button><button class="btn pri" id="imOk"${tl?'':' disabled'}>匯入</button></div>`);
+   sheet.querySelectorAll('[data-il]').forEach(b=>b.onclick=()=>{tl=b.dataset.il;draw2()});
+   $('#imOk').onclick=()=>{const r=applyTr(res,tl);closeModal();if(after)after(tl);openModal(`<h3>匯入完成</h3><p>已把 ${LANGS[tl]} 翻譯填回 ${r.nc} 張角色卡${r.no?`、${r.no} 張委託單`:''}。</p><div class="acts"><button class="btn pri" data-close>好</button></div>`)}};draw2()}}
+
+/* language settings */
+function renderLangs(){$('#langList').innerHTML=`<div class="mc"><span class="tx">中文<small>原文</small></span></div>`+langList.map(l=>`<div class="mc"><span class="tx">${esc(l.name)}<small>${isCustom(l.code)?(l.labels?'自訂・欄位名稱已翻譯':'自訂・欄位名稱暫用英文'):'預設'}</small></span><button class="ib" data-ldel="${esc(l.code)}" aria-label="移除 ${esc(l.name)}">×</button></div>`).join('')}
+$('#langList').addEventListener('click',e=>{const b=e.target.closest('[data-ldel]');if(!b)return;const l=langList.find(x=>x.code===b.dataset.ldel);if(!l)return;
+ ask(`移除「${l.name}」語言分頁？已經翻好的內容會保留，之後加回來還看得到。`,'移除',()=>{langList=langList.filter(x=>x!==l);saveLangs();applyLangs();renderLangs()})});
+$('#langAdd').onclick=()=>{const i=$('#langName'),n=i.value.trim();if(!n)return;
+ const back=Object.entries(BUILTIN).find(([,v])=>v===n||v.toLowerCase()===n.toLowerCase());const old=langList.find(l=>l.name===n);if(old){i.value='';return}
+ const code=back?back[0]:'x'+uid().slice(-6);langList.push({code,name:n});saveLangs();applyLangs();renderLangs();i.value=''};
+$('#trAll').onclick=()=>trHub(cards,orders,null);
+
+/* ---------- backup ---------- */
+async function storageInfo(){let t=`目前有 ${cards.length} 個角色、${cards.reduce((a,c)=>a+c.photos.length,0)} 張參考圖、${orders.length} 張委託單、${sketches.length} 張示意圖。`;
+ try{const e=await navigator.storage.estimate();if(e&&e.usage)t+=` 已使用約 ${(e.usage/1048576).toFixed(1)} MB。`}catch(e){}
+ t+=idb?' 儲存方式：手機本機資料庫。':' ⚠ 這個瀏覽器不能長期保存，請一定要下載備份。';$('#stInfo').textContent=t}
+$('#bkExp').onclick=()=>{const d=new Date(),stamp=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+ const blob=new Blob([JSON.stringify({app:'commish-helper',v:3,cards,sketches,orders,langs:langList})],{type:'application/json'});saveFile(blob,`委圖備份_${stamp}.json`,$('#bkStat'))};
+$('#bkImp').onclick=()=>$('#importIn').click();
+$('#importIn').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const st=$('#bkStat');
+ try{const d=JSON.parse(await f.text());if(d.app!=='commish-helper')throw 0;let n=0;
+  (d.cards||[]).forEach(c=>{if(!c||!c.id)return;const o={...newCard(),...c,f:c.f||{},tr:c.tr||{},pal:Array.isArray(c.pal)?c.pal:[],photos:(Array.isArray(c.photos)?c.photos:[]).filter(p=>typeof p==='string'&&p.startsWith('data:image/'))};migrateCard(o);cards=cards.filter(x=>x.id!==o.id).concat(o);put('cards',o);n++});
+  (d.sketches||[]).forEach(s=>{if(!s||!s.id)return;const o=normSketch({...s});sketches=sketches.filter(x=>x.id!==o.id).concat(o);put('sketches',o)});
+  (d.orders||[]).forEach(r=>{if(!r||!r.id)return;const o={...newOrder(),...r,f:r.f||{},tr:r.tr||{},chars:Array.isArray(r.chars)?r.chars:[]};orders=orders.filter(x=>x.id!==o.id).concat(o);put('orders',o)});
+  if(Array.isArray(d.langs))d.langs.forEach(l=>{if(!l||!l.code||!l.name||l.code==='zh')return;const ex=langList.find(x=>x.code===l.code);if(ex){if(l.labels)ex.labels={...(ex.labels||{}),...l.labels}}else langList.push({code:String(l.code),name:String(l.name),labels:l.labels})});saveLangs();applyLangs();renderLangs();
+  sk=null;st.textContent=`匯入完成：${n} 個角色、${(d.orders||[]).length} 張委託單、${(d.sketches||[]).length} 張示意圖。`;storageInfo()}catch(err){st.textContent='這不是委圖小幫手的備份檔，或檔案已損壞。'}});
+
+/* ---------- start ---------- */
+function seed(){const c=newCard();Object.assign(c.f,{name:'林小雨',age:'17 歲',gender:'女',basic:'高中生（範例資料，可以直接刪除）',look:'黑色及肩短髮，瀏海旁分；琥珀色眼睛；左眼下方有一顆淚痣；身材嬌小',outfit:'深藍色水手服配紅色領巾；常戴黃色雨衣造型的髮夾',pers:'外表安靜但很愛笑，害羞時會摸頭髮',must:'左眼下的淚痣、黃色雨衣髮夾',ng:'請不要畫成長髮；表情不要太成熟',other:'第一次委託，請多指教！有任何問題都歡迎詢問。'});
+ c.pal=[{hex:'#1d2236',label:'髮色'},{hex:'#c98a3a',label:'瞳色'},{hex:'#24305e',label:'制服'},{hex:'#f2c230',label:'髮夾'}];c.cm='158';
+ const s=blankSketch('小雨和朋友');sketches.push(s);
+ const a=newFig({name:'小雨',cm:158,color:'#7cc6f5',x:340,pose:'叉腰'}),b=newFig({name:'朋友',cm:175,color:'#ff8fb3',x:600,pose:'揮手'});s.layers.unshift(a,b);
+ c.sk=s.id;cards.push(c);put('cards',c);put('sketches',s);
+ const o=newOrder();Object.assign(o.f,{title:'小雨生日賀圖（範例）',size:'2000×3000px、300dpi、PNG',budget:'NT$3,000',scene:'雨後放晴的街角，小雨撐著透明傘回頭微笑',pose:'害羞地笑，一手摸頭髮',notes:'完成後想放在社群當頭像，會標註繪師'});o.chars=[c.id];o.frame='half';o.due='2026-12-31';orders.push(o);put('orders',o)}
+(async()=>{idb=await openDB();if(!idb)showWarn();try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+ const meta=await getAll('meta'),lm=meta.find(x=>x.id==='langs');if(lm&&Array.isArray(lm.list))langList=lm.list.filter(l=>l&&l.code&&l.name&&l.code!=='zh').map(l=>({code:String(l.code),name:String(l.name),labels:l.labels&&typeof l.labels==='object'?l.labels:undefined}));applyLangs();
+ cards=await getAll('cards');sketches=(await getAll('sketches')).map(normSketch);orders=(await getAll('orders')).map(o=>({...newOrder(),...o,f:o.f||{},tr:o.tr||{},chars:o.chars||[]}));cards.forEach(c=>{c.tr=c.tr||{};c.pal=c.pal||[];c.photos=c.photos||[];c.f=c.f||{};migrateCard(c)});
+ let seeded=false;try{seeded=localStorage.getItem('commish-seeded')==='1'}catch(e){}
+ if(!cards.length&&!sketches.length&&!seeded){seed();try{localStorage.setItem('commish-seeded','1')}catch(e){}}
+ renderCards()})();
+}
+</script>
+</body></html>
