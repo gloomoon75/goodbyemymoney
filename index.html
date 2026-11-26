@@ -244,14 +244,14 @@ const hexOk=h=>/^#[0-9a-f]{6}$/i.test(h||'')?h:'#cccccc';
 const use=n=>{try{return window.claude&&window.claude.use?window.claude.use(n).catch(()=>null):Promise.resolve(null)}catch(e){return Promise.resolve(null)}};
 const FF='"Huninn","M PLUS Rounded 1c","Noto Sans TC","PingFang TC","Hiragino Sans","Apple SD Gothic Neo","Noto Sans CJK JP","Malgun Gothic",system-ui,sans-serif';
 const LANGS={zh:'中文',ja:'日本語',ko:'한국어',en:'English'};
-const KEYS=['name','age','gender','basic','look','outfit','pers','must','ng','other'];
+const KEYS=['name','age','gender','basic','hair','look','outfit','pers','must','ng','other'];
 const SHORT=['name','age','gender'],LONG=KEYS.filter(k=>!SHORT.includes(k));
 const LB={
- zh:{name:'角色名稱',age:'年齡',gender:'性別',basic:'其他基本資料',look:'外貌',outfit:'服裝・配件',pers:'個性・表情',must:'必畫重點',ng:'NG／請避免',other:'其他',pal:'色票',ref:'參考圖',cm:'身高',sk:'示意圖',sub:'角色設定',refn:'另附 {n} 張參考圖'},
- ja:{name:'キャラクター名',age:'年齢',gender:'性別',basic:'その他の基本情報',look:'外見',outfit:'服装・小物',pers:'性格・表情',must:'必ず描いてほしいポイント',ng:'NG・避けてほしいこと',other:'その他',pal:'カラーパレット',ref:'参考画像',cm:'身長',sk:'構図ラフ',sub:'キャラクター設定',refn:'参考画像 {n} 枚を添付します'},
- ko:{name:'캐릭터 이름',age:'나이',gender:'성별',basic:'기타 기본 정보',look:'외모',outfit:'의상・소품',pers:'성격・표정',must:'꼭 그려주셨으면 하는 포인트',ng:'NG・피해주셨으면 하는 것',other:'기타',pal:'컬러 팔레트',ref:'참고 이미지',cm:'키',sk:'구도 러프',sub:'캐릭터 설정',refn:'참고 이미지 {n}장 첨부'},
- en:{name:'Character name',age:'Age',gender:'Gender',basic:'Other basics',look:'Appearance',outfit:'Outfit & accessories',pers:'Personality & expression',must:'Must-haves',ng:'Please avoid',other:'Other notes',pal:'Colour palette',ref:'References',cm:'Height',sk:'Layout sketch',sub:'Character sheet',refn:'{n} reference image(s) attached'}};
-const PH={name:'角色名字',age:'例如：17 歲',gender:'例如：女',basic:'種族、職業、生日、身分…',look:'髮型、髮色、瞳色、體型、痣或疤等特徵',outfit:'常穿的衣服、飾品、武器…',pers:'個性、常見表情、小動作',must:'一定要畫到的地方，例如淚痣、耳環',ng:'不想要的畫法，例如不要畫成長髮',other:'委託內容、想對繪師說的話、其他補充…'};
+ zh:{name:'角色名稱',age:'年齡',gender:'性別',basic:'其他基本資料',hair:'髮型',look:'外貌',outfit:'服裝・配件',pers:'個性・表情',must:'必畫重點',ng:'NG／請避免',other:'其他',pal:'色票',ref:'參考圖',cm:'身高',sk:'示意圖',sub:'角色設定',refn:'另附 {n} 張參考圖'},
+ ja:{name:'キャラクター名',age:'年齢',gender:'性別',basic:'その他の基本情報',hair:'髪型',look:'外見',outfit:'服装・小物',pers:'性格・表情',must:'必ず描いてほしいポイント',ng:'NG・避けてほしいこと',other:'その他',pal:'カラーパレット',ref:'参考画像',cm:'身長',sk:'構図ラフ',sub:'キャラクター設定',refn:'参考画像 {n} 枚を添付します'},
+ ko:{name:'캐릭터 이름',age:'나이',gender:'성별',basic:'기타 기본 정보',hair:'헤어스타일',look:'외모',outfit:'의상・소품',pers:'성격・표정',must:'꼭 그려주셨으면 하는 포인트',ng:'NG・피해주셨으면 하는 것',other:'기타',pal:'컬러 팔레트',ref:'참고 이미지',cm:'키',sk:'구도 러프',sub:'캐릭터 설정',refn:'참고 이미지 {n}장 첨부'},
+ en:{name:'Character name',age:'Age',gender:'Gender',basic:'Other basics',hair:'Hairstyle',look:'Appearance',outfit:'Outfit & accessories',pers:'Personality & expression',must:'Must-haves',ng:'Please avoid',other:'Other notes',pal:'Colour palette',ref:'References',cm:'Height',sk:'Layout sketch',sub:'Character sheet',refn:'{n} reference image(s) attached'}};
+const PH={name:'角色名字',age:'例如：17 歲',gender:'例如：女',basic:'種族、職業、生日、身分…',hair:'長度、髮色、瀏海、綁法，例如：黑色及肩短髮、瀏海旁分',look:'瞳色、膚色、體型、痣或疤等特徵',outfit:'常穿的衣服、飾品、武器…',pers:'個性、常見表情、小動作',must:'一定要畫到的地方，例如淚痣、耳環',ng:'不想要的畫法，例如不要畫成長髮',other:'委託內容、想對繪師說的話、其他補充…'};
 
 /* ---------- storage ---------- */
 let idb=null;const mem={cards:{},sketches:{},orders:{},meta:{}};
@@ -381,10 +381,10 @@ function exportSheet({av,start,text,image,base}){let lg=av.includes(start)?start
  $('#exImg').onclick=async()=>{$('#exStat').textContent='產生圖卡中…';try{const cv=await image(lg);cv.toBlob(b=>showOut({blob:b,filename:`${base}_${lg}.png`}),'image/png')}catch(e){$('#exStat').textContent='圖卡產生失敗，請再試一次。'}}};draw()}
 function exSheet(){const c=cur;exportSheet({av:availLangs(c),start:lang,base:fname(c.f.name),text:l=>cardText(c,l),image:l=>cardImage(c,l)})}
 let lastUrl=null;
-function showOut({blob,filename,text,note}){if(lastUrl)URL.revokeObjectURL(lastUrl);lastUrl=text?null:URL.createObjectURL(blob);
+function showOut({blob,filename,text,note,copied}){if(lastUrl)URL.revokeObjectURL(lastUrl);lastUrl=text?null:URL.createObjectURL(blob);
  openModal(`<h3>${text?'文字檔':'圖片'}預覽</h3>${text?`<pre class="prev">${esc(text)}</pre>`:`<img class="prev" src="${lastUrl}" alt="匯出預覽"><p class="mute">也可以長按圖片，直接存到相簿或分享。</p>`}
  ${note?`<p class="note" style="margin:10px 0 0">${esc(note)}</p>`:''}<div class="acts">${text?'<button class="btn pri" id="cpy">複製文字</button>':''}<button class="btn${text?'':' pri'}" id="dlb">下載</button></div><p class="mute" id="dls" aria-live="polite"></p>`);
- if(text)$('#cpy').onclick=async()=>{try{await navigator.clipboard.writeText(text);$('#dls').textContent='已複製，可以直接貼給繪師。'}catch(e){$('#dls').textContent='無法自動複製，請長按上面的文字選取。'}};
+ if(text)$('#cpy').onclick=async()=>{try{await navigator.clipboard.writeText(text);$('#dls').textContent=copied||'已複製，可以直接貼給繪師。'}catch(e){$('#dls').textContent='無法自動複製，請長按上面的文字選取。'}};
  $('#dlb').onclick=()=>saveFile(blob,filename,$('#dls'))}
 async function saveFile(blob,filename,st){const dl=await use('downloads');if(!dl){try{const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}catch(e){}st.textContent=blob.type.startsWith('image')?'已開始下載。如果沒有反應，請長按圖片儲存。':'已開始下載。如果沒有反應，請用「複製文字」。';return}
  try{await dl.save({filename,data:blob});st.textContent='已送出下載：'+filename}catch(e){st.textContent='沒有完成下載'+(blob.type.startsWith('image')?'，也可以長按圖片儲存。':'。')}}
@@ -825,7 +825,7 @@ function trHub(cs,os,after){const an=aiName(),ai=an?`<button class="btn" id="hub
  <p class="mute">想翻成其他語言？到「設定」新增語言。</p>`);
  sheet.querySelectorAll('[data-tl]').forEach(b=>b.onclick=()=>{lg=b.dataset.tl;draw()});
  if(an)$('#hubAI').onclick=()=>{closeModal();os.length?oTrSheet():trSheet()};
- $('#hubEx').onclick=()=>{const t=trFileText(lg,cs,os);showOut({blob:new Blob([t],{type:'text/plain;charset=utf-8'}),filename:`翻譯檔_${fname(os[0]?os[0].f.title:cs[0]?cs[0].f.name:'all')}_${lg}.txt`,text:t,note:'按「複製文字」貼給任何 AI，請它翻譯。翻好後回到「翻譯 → ② 匯入」貼回來。'})};
+ $('#hubEx').onclick=()=>{const t=trFileText(lg,cs,os);showOut({blob:new Blob([t],{type:'text/plain;charset=utf-8'}),filename:`翻譯檔_${fname(os[0]?os[0].f.title:cs[0]?cs[0].f.name:'all')}_${lg}.txt`,text:t,note:'按「複製文字」貼給任何 AI，請它翻譯。翻好後回到「翻譯 → ② 匯入」貼回來。',copied:'已複製，貼給 AI 請它翻譯吧。翻好後回到「翻譯 → ② 匯入」貼回來。'})};
  $('#hubIm').onclick=()=>importSheet(lg,after)};draw()}
 function importSheet(lg,after){openModal(`<h3>匯入翻譯</h3><p class="mute">把 AI 翻好的整段內容貼在下面（要包含 [[...]] 標記），或選擇 AI 給你的文字檔。</p>
  <textarea id="imTxt" rows="8" placeholder="[[lang:ja]]&#10;[[card:…]]&#10;[[name]]&#10;…"></textarea>
@@ -866,7 +866,7 @@ $('#importIn').addEventListener('change',async e=>{const f=e.target.files[0];e.t
   sk=null;st.textContent=`匯入完成：${n} 個角色、${(d.orders||[]).length} 張委託單、${(d.sketches||[]).length} 張示意圖。`;storageInfo()}catch(err){st.textContent='這不是委圖小幫手的備份檔，或檔案已損壞。'}});
 
 /* ---------- start ---------- */
-function seed(){const c=newCard();Object.assign(c.f,{name:'林小雨',age:'17 歲',gender:'女',basic:'高中生（範例資料，可以直接刪除）',look:'黑色及肩短髮，瀏海旁分；琥珀色眼睛；左眼下方有一顆淚痣；身材嬌小',outfit:'深藍色水手服配紅色領巾；常戴黃色雨衣造型的髮夾',pers:'外表安靜但很愛笑，害羞時會摸頭髮',must:'左眼下的淚痣、黃色雨衣髮夾',ng:'請不要畫成長髮；表情不要太成熟',other:'第一次委託，請多指教！有任何問題都歡迎詢問。'});
+function seed(){const c=newCard();Object.assign(c.f,{name:'林小雨',age:'17 歲',gender:'女',basic:'高中生（範例資料，可以直接刪除）',hair:'黑色及肩短髮，瀏海旁分',look:'琥珀色眼睛；左眼下方有一顆淚痣；身材嬌小',outfit:'深藍色水手服配紅色領巾；常戴黃色雨衣造型的髮夾',pers:'外表安靜但很愛笑，害羞時會摸頭髮',must:'左眼下的淚痣、黃色雨衣髮夾',ng:'請不要畫成長髮；表情不要太成熟',other:'第一次委託，請多指教！有任何問題都歡迎詢問。'});
  c.pal=[{hex:'#1d2236',label:'髮色'},{hex:'#c98a3a',label:'瞳色'},{hex:'#24305e',label:'制服'},{hex:'#f2c230',label:'髮夾'}];c.cm='158';
  const s=blankSketch('小雨和朋友');sketches.push(s);
  const a=newFig({name:'小雨',cm:158,color:'#7cc6f5',x:340,pose:'叉腰'}),b=newFig({name:'朋友',cm:175,color:'#ff8fb3',x:600,pose:'揮手'});s.layers.unshift(a,b);
